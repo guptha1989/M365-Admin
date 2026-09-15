@@ -51,9 +51,13 @@ def get_collaboration_reports(user: dict = Depends(get_current_user)):
 def get_mailbox_reports_endpoint(user: dict = Depends(get_current_user)):
     return graph_client.get_mailbox_reports()
 
-@router.get("/azure-ad/inactive", summary="Azure AD Inactive Users by 60, 90, 120 days")
-def get_azure_ad_inactive_endpoint(days: int = Query(90, description="Inactivity threshold days (60, 90, 120)"), user: dict = Depends(get_current_user)):
-    return graph_client.get_azure_ad_inactive_users(inactivity_days=days)
+@router.get("/azure-ad/inactive", summary="Azure AD Inactive & Disabled Accounts Report")
+def get_azure_ad_inactive_endpoint(
+    days: int = Query(90, description="Inactivity threshold days (60, 90, 120)"),
+    category: str = Query("both", description="Category filter: 'inactive', 'disabled', or 'both'"),
+    user: dict = Depends(get_current_user)
+):
+    return graph_client.get_azure_ad_inactive_users(inactivity_days=days, user_category=category)
 
 @router.get("/azure-ad/licenses-summary", summary="Azure AD Licenses Breakdown (Trial vs Paid, Used vs Available)")
 def get_azure_ad_licenses_endpoint(user: dict = Depends(get_current_user)):

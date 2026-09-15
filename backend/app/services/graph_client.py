@@ -187,7 +187,6 @@ class MicrosoftGraphClient:
                         dept = u.get("department") or departments[idx % len(departments)]
                         rbi_type = "VIP" if dept in ["Executive", "Legal"] else ("Frontline" if dept == "Sales" else "StandardEmployee")
                         has_lic = bool(u.get("assignedLicenses"))
-                        lic_name = "MICROSOFT 365 E5" if rbi_type == "VIP" else ("MICROSOFT 365 E3" if has_lic else "UNLICENSED")
                         users.append({
                             "id": u.get("id"),
                             "userPrincipalName": u.get("userPrincipalName"),
@@ -196,7 +195,9 @@ class MicrosoftGraphClient:
                             "RBIusertype": rbi_type,
                             "assignedLicense": lic_name,
                             "lastLoginDate": (datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(days=(idx + 1) * 3)).strftime("%Y-%m-%d"),
-                            "accountEnabled": u.get("accountEnabled", True)
+                            "accountEnabled": u.get("accountEnabled", True),
+                            "mailboxPermissions": f"Full Access: {dept}-SharedMbx, Corp-Vault; Send As: {dept.lower()}-desk@contoso.com" if idx % 2 == 0 else "Standard Mailbox; No Shared Delegation",
+                            "oneDrivePermissions": f"{(idx*4.2+12.0):.1f} GB Used / 1 TB; {idx+3} External Links; {idx%3+1} Guests"
                         })
                     if users:
                         return self._apply_env_cap(users)
@@ -210,6 +211,28 @@ class MicrosoftGraphClient:
         for i in range(1, count + 1):
             dept = departments[i % len(departments)]
             rbi_type = "VIP" if dept in ["Executive", "Legal"] else ("Frontline" if dept == "Sales" else "StandardEmployee")
+            is_enabled = (i % 5 != 0)  # Mix of Active (Enabled) and Deprovisioned (Disabled) users
+            
+            # Detailed Mailbox Permissions for License Downgrade/Revoke decisions
+            if not is_enabled:
+                mbx_perm = f"Delegated Manager Access; Full Access to Archive-{dept} & {dept}-SharedVault"
+            elif i % 3 == 0:
+                mbx_perm = f"Full Access: 3 Shared Mailboxes ({dept}-Ops, Exec-Assist, Legal-Hold); Send As: {dept.lower()}@contoso.com"
+            elif i % 2 == 0:
+                mbx_perm = f"Full Access: {dept}-TeamVault; Send On Behalf Enabled"
+            else:
+                mbx_perm = "Standard User Mailbox; No External Delegation"
+
+            # Detailed OneDrive Permissions & Data Sharing
+            if not is_enabled:
+                onedrive_perm = f"{(i*3.4+18.2):.1f} GB Cold Storage; {i%4+2} External Shared Links (Action Required: Revoke)"
+            elif i % 3 == 0:
+                onedrive_perm = f"{(i*4.1+25.0):.1f} GB / 1 TB Used; {i*2+3} Shared Files; 4 Active Guest Access Links"
+            elif i % 2 == 0:
+                onedrive_perm = f"{(i*2.8+8.5):.1f} GB Used; {i+2} Shared Links (Internal & External)"
+            else:
+                onedrive_perm = "5.2 GB Used; 1 Internal Shared Folder"
+
             users.append({
                 "id": f"usr-uuid-{i:04d}",
                 "userPrincipalName": f"TestSM{i:03d}@{domain}",
@@ -218,7 +241,9 @@ class MicrosoftGraphClient:
                 "RBIusertype": rbi_type,
                 "assignedLicense": "MICROSOFT 365 E5" if rbi_type == "VIP" else "MICROSOFT 365 E3",
                 "lastLoginDate": (datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(days=i * 2)).strftime("%Y-%m-%d"),
-                "accountEnabled": (i % 5 != 0)  # Mix of Active (Enabled) and Deprovisioned (Disabled) users
+                "accountEnabled": is_enabled,
+                "mailboxPermissions": mbx_perm,
+                "oneDrivePermissions": onedrive_perm
             })
         return self._apply_env_cap(users)
 
@@ -668,19 +693,42 @@ class MicrosoftGraphClient:
             "litigation_holds": litigation_holds
         }
 
-    def get_azure_ad_inactive_users(self, inactivity_days: int = 90) -> List[Dict[str, Any]]:
-        """Fetch inactive users filtered by 60, 90, or 120 days of inactivity."""
+    def get_azure_ad_inactive_users(self, inactivity_days: int = 90, user_category: str = "both") -> List[Dict[str, Any]]:
+        """
+        Fetch Azure AD accounts filtered by inactivity days (60, 90, 120) and category ('inactive', 'disabled', 'both').
+        Includes Mailbox and OneDrive permission details for license reclamation & downgrade decisions.
+        """
         users = self.get_users_list()
-        inactive = []
+        result = []
         today = datetime.datetime.now(datetime.timezone.utc)
         for u in users:
             login_dt = datetime.datetime.strptime(u["lastLoginDate"], "%Y-%m-%d").replace(tzinfo=datetime.timezone.utc)
             diff_days = (today - login_dt).days
-            if diff_days >= inactivity_days:
-                u_copy = dict(u)
-                u_copy["inactiveDays"] = diff_days
-                inactive.append(u_copy)
-        return inactive
+            is_disabled = not u.get("accountEnabled", True)
+            is_inactive = diff_days >= inactivity_days
+
+            u_copy = dict(u)
+            u_copy["inactiveDays"] = diff_days
+            u_copy["accountStatus"] = "Disabled" if is_disabled else "Active"
+            
+            if is_disabled and is_inactive:
+                u_copy["userCategory"] = "Disabled & Inactive"
+            elif is_disabled:
+                u_copy["userCategory"] = "Disabled Account"
+            else:
+                u_copy["userCategory"] = "Inactive User"
+
+            if user_category == "inactive":
+                if is_inactive and not is_disabled:
+                    result.append(u_copy)
+            elif user_category == "disabled":
+                if is_disabled:
+                    result.append(u_copy)
+            else:  # "both"
+                if is_inactive or is_disabled:
+                    result.append(u_copy)
+
+        return result
 
     def get_azure_ad_licenses_breakdown(self) -> Dict[str, Any]:
         """Fetch license summary categorizing Used vs Available units and Trial vs Paid status via Live Graph API or fallback."""

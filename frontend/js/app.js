@@ -3544,35 +3544,76 @@ async function renderMailboxReports(container) {
     }
 }
 
-async function renderAzureADInactive(container, days = 90) {
-    const res = await fetch(`${API_BASE}/reports/azure-ad/inactive?days=${days}`);
-    const data = await res.json();
+async function renderAzureADInactive(container, days = 90, category = 'both') {
+    const res = await fetch(`${API_BASE}/reports/azure-ad/inactive?days=${days}&category=${category}`);
+    const data = await res.json() || [];
+
+    const totalCount = data.length;
+    const inactiveCount = data.filter(u => u.accountStatus === 'Active' || u.userCategory === 'Inactive User').length;
+    const disabledCount = data.filter(u => u.accountStatus === 'Disabled' || u.userCategory?.includes('Disabled')).length;
+    const estimatedSavings = totalCount * 350;
 
     // Chart data
-    const deptGroups = {};
-    (data || []).forEach(u => { deptGroups[u.department || 'Unknown'] = (deptGroups[u.department || 'Unknown'] || 0) + 1; });
+    const catGroups = {};
+    data.forEach(u => { catGroups[u.userCategory || 'Inactive User'] = (catGroups[u.userCategory || 'Inactive User'] || 0) + 1; });
     const licGroups = {};
-    (data || []).forEach(u => { licGroups[u.assignedLicense || 'No License'] = (licGroups[u.assignedLicense || 'No License'] || 0) + 1; });
+    data.forEach(u => { licGroups[u.assignedLicense || 'No License'] = (licGroups[u.assignedLicense || 'No License'] || 0) + 1; });
 
     container.innerHTML = `
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
-            <h3>🔑 Azure AD Inactive Users</h3>
-            <div style="display: flex; gap: 8px;">
-                <button class="btn ${days === 60 ? 'btn-primary' : 'btn-secondary'}" onclick="renderAzureADInactive(document.getElementById('module-container'), 60)">60 Days Inactive</button>
-                <button class="btn ${days === 90 ? 'btn-primary' : 'btn-secondary'}" onclick="renderAzureADInactive(document.getElementById('module-container'), 90)">90 Days Inactive</button>
-                <button class="btn ${days === 120 ? 'btn-primary' : 'btn-secondary'}" onclick="renderAzureADInactive(document.getElementById('module-container'), 120)">120 Days Inactive</button>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 10px;">
+            <div>
+                <h3 style="margin: 0; color: #f1f5f9;">🔑 Azure AD Inactive & Disabled Accounts Report</h3>
+                <p style="margin: 4px 0 0 0; color: var(--text-secondary); font-size: 0.88rem;">
+                    Detailed audit of inactive (60/90/120d) and disabled accounts with Mailbox & OneDrive permission details for license downgrade and revocation decisions.
+                </p>
+            </div>
+            <div style="display: flex; gap: 6px; flex-wrap: wrap; align-items: center;">
+                <span style="font-size: 0.82rem; font-weight: 600; color: #94a3b8; margin-right: 4px;">Period:</span>
+                <button class="btn ${days === 60 ? 'btn-primary' : 'btn-secondary'} btn-sm" onclick="renderAzureADInactive(document.getElementById('module-container'), 60, '${category}')">60 Days</button>
+                <button class="btn ${days === 90 ? 'btn-primary' : 'btn-secondary'} btn-sm" onclick="renderAzureADInactive(document.getElementById('module-container'), 90, '${category}')">90 Days</button>
+                <button class="btn ${days === 120 ? 'btn-primary' : 'btn-secondary'} btn-sm" onclick="renderAzureADInactive(document.getElementById('module-container'), 120, '${category}')">120 Days</button>
             </div>
         </div>
-        <p style="color: var(--text-secondary);">Showing users with no login activity for at least <strong>${days} days</strong>.</p>
+
+        <!-- Filter Selection Ribbon -->
+        <div style="background: rgba(15, 23, 42, 0.6); padding: 10px 14px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); margin-bottom: 1.5rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span style="font-size: 0.85rem; font-weight: 700; color: #38bdf8;">Account Category Filter:</span>
+                <button class="btn ${category === 'both' ? 'btn-primary' : 'btn-secondary'} btn-sm" onclick="renderAzureADInactive(document.getElementById('module-container'), ${days}, 'both')">🌐 Both (Inactive & Disabled)</button>
+                <button class="btn ${category === 'inactive' ? 'btn-primary' : 'btn-secondary'} btn-sm" onclick="renderAzureADInactive(document.getElementById('module-container'), ${days}, 'inactive')">💤 Inactive Users Only</button>
+                <button class="btn ${category === 'disabled' ? 'btn-primary' : 'btn-secondary'} btn-sm" onclick="renderAzureADInactive(document.getElementById('module-container'), ${days}, 'disabled')">🚫 Disabled Accounts Only</button>
+            </div>
+            <span class="badge badge-info">Showing ${totalCount} Accounts</span>
+        </div>
+
+        <!-- Summary Stat Cards -->
+        <div class="card-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); margin-bottom: 1.5rem;">
+            <div class="card stat-card" style="border-left: 4px solid #3b82f6;">
+                <div class="stat-value" style="color: #3b82f6;">${totalCount}</div>
+                <div class="stat-label">Total Accounts Audited</div>
+            </div>
+            <div class="card stat-card" style="border-left: 4px solid #f59e0b;">
+                <div class="stat-value" style="color: #f59e0b;">${inactiveCount}</div>
+                <div class="stat-label">Inactive Users (>=${days}d)</div>
+            </div>
+            <div class="card stat-card" style="border-left: 4px solid #ef4444;">
+                <div class="stat-value" style="color: #ef4444;">${disabledCount}</div>
+                <div class="stat-label">Disabled Accounts</div>
+            </div>
+            <div class="card stat-card" style="border-left: 4px solid #10b981;">
+                <div class="stat-value" style="color: #10b981;">$${estimatedSavings.toLocaleString()}/yr</div>
+                <div class="stat-label">License Reclaim Potential</div>
+            </div>
+        </div>
 
         <!-- Charts Row -->
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.2rem;margin-bottom:1.5rem;">
             <div class="card" style="padding:1.2rem;">
-                <h4 style="margin:0 0 0.8rem;font-size:0.95rem;">🏢 Inactive Users by Department</h4>
+                <h4 style="margin:0 0 0.8rem;font-size:0.95rem;">🏢 Account Category Breakdown</h4>
                 <div style="position:relative;height:220px;"><canvas id="chart-aad-inactive-dept"></canvas></div>
             </div>
             <div class="card" style="padding:1.2rem;">
-                <h4 style="margin:0 0 0.8rem;font-size:0.95rem;">💳 Inactive Users by License</h4>
+                <h4 style="margin:0 0 0.8rem;font-size:0.95rem;">💳 Assigned Licenses for Inactive/Disabled</h4>
                 <div style="position:relative;height:220px;"><canvas id="chart-aad-inactive-lic"></canvas></div>
             </div>
         </div>
@@ -3581,19 +3622,32 @@ async function renderAzureADInactive(container, days = 90) {
     `;
 
     renderInteractiveTable('azuread-inactive-table-container', {
-        data: data || [],
-        title: `Azure AD Inactive Users (${days} Days Threshold)`,
-        subtitle: 'Click any user row to inspect full Azure AD user profile and attributes',
-        exportFileName: `AzureAD_Inactive_Users_${days}Days`,
-        filterFields: ['department', 'RBIusertype', 'assignedLicense'],
+        data: data,
+        title: `Azure AD Inactive & Disabled Accounts (${days} Days Threshold | Filter: ${category.toUpperCase()})`,
+        subtitle: 'Audit Mailbox & OneDrive permissions to make informed decisions for license revocation, downgrades, and external link cleanup.',
+        exportFileName: `AzureAD_Inactive_Disabled_Accounts_${days}Days_${category}`,
+        filterFields: ['department', 'RBIusertype', 'assignedLicense', 'userCategory', 'accountStatus'],
         columns: [
-            { key: 'displayName', label: 'User', format: v => `<strong>${v}</strong>` },
-            { key: 'userPrincipalName', label: 'UPN' },
+            { key: 'displayName', label: 'User Name', format: v => `<strong>${v}</strong>` },
+            { key: 'userPrincipalName', label: 'UPN Email', format: v => `<code>${v}</code>` },
             { key: 'department', label: 'Department' },
-            { key: 'RBIusertype', label: 'RBI User Type', format: v => `<span class="badge" style="background: var(--accent-blue);">${v}</span>` },
-            { key: 'assignedLicense', label: 'Assigned License' },
+            { key: 'userCategory', label: 'Account Category', format: v => {
+                if (v?.includes('Disabled')) return `<span class="badge badge-danger">🚫 ${v}</span>`;
+                return `<span class="badge badge-warning">💤 ${v}</span>`;
+            }},
+            { key: 'assignedLicense', label: 'Assigned License', format: v => `<span class="badge badge-outline">${v}</span>` },
+            { key: 'mailboxPermissions', label: 'Mailbox Permissions & Delegations', format: v => `
+                <div style="font-size: 0.8rem; color: #cbd5e1; max-width: 280px; line-height: 1.3;">
+                    <span style="color: #38bdf8; font-weight:600;">📬</span> ${v}
+                </div>
+            `},
+            { key: 'oneDrivePermissions', label: 'OneDrive Permissions & Data Sharing', format: v => `
+                <div style="font-size: 0.8rem; color: #cbd5e1; max-width: 280px; line-height: 1.3;">
+                    <span style="color: #34d399; font-weight:600;">📁</span> ${v}
+                </div>
+            `},
             { key: 'lastLoginDate', label: 'Last Login' },
-            { key: 'inactiveDays', label: 'Inactivity Period', format: v => `<span class="badge" style="background: ${v > 100 ? 'var(--accent-red)' : 'var(--accent-amber)'}">${v} Days Inactive</span>` }
+            { key: 'inactiveDays', label: 'Inactivity', format: v => `<span class="badge" style="background: ${v > 100 ? 'var(--accent-red)' : 'var(--accent-amber)'}">${v} Days</span>` }
         ]
     });
 
@@ -3602,8 +3656,8 @@ async function renderAzureADInactive(container, days = 90) {
         new Chart(document.getElementById('chart-aad-inactive-dept'), {
             type: 'bar',
             data: {
-                labels: Object.keys(deptGroups),
-                datasets: [{ label: 'Inactive Users', data: Object.values(deptGroups), backgroundColor: COLORS, borderRadius: 6 }]
+                labels: Object.keys(catGroups),
+                datasets: [{ label: 'Accounts', data: Object.values(catGroups), backgroundColor: COLORS, borderRadius: 6 }]
             },
             options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } }
         });
