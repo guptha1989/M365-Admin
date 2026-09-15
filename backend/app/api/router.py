@@ -19,13 +19,25 @@ from app.api.v1 import (
     teams_integration,
     policies,
     compliance_security,
-    requests
+    requests,
+    auth_tenants,
+    intune_vulnerabilities,
+    api_audit
 )
 
 api_router = APIRouter()
 
 # System Health Endpoint
 api_router.include_router(health.router, tags=["System Health"])
+
+# SSO Authentication, Tenants, & Per-Module Phase Management
+api_router.include_router(auth_tenants.router, tags=["SSO Authentication & Multi-Tenant Management"])
+
+# Intune Vulnerability Governance
+api_router.include_router(intune_vulnerabilities.router, tags=["Intune Security Vulnerabilities"])
+
+# API Scope & Permissions Audit Matrix
+api_router.include_router(api_audit.router, tags=["API Permissions & Scope Audit"])
 
 # Centralized Request Management Router
 api_router.include_router(requests.router, prefix="/requests", tags=["Centralized Request Management Hub"])

@@ -183,3 +183,54 @@ class APIIntegrationConfig(Base):
     last_error = Column(Text, nullable=True)        # Records last failover exception message
     error_count = Column(Integer, default=0)        # Tracks consecutive failures
     updated_at = Column(DateTime, default=datetime.datetime.utcnow)
+
+class RegisteredTenant(Base):
+    __tablename__ = "registered_tenants"
+
+    id = Column(Integer, primary_key=True, index=True)
+    tenant_id = Column(String(100), unique=True, index=True)
+    tenant_name = Column(String(255))
+    primary_domain = Column(String(255), index=True)
+    client_id = Column(String(255), nullable=True)
+    encrypted_client_secret = Column(Text, nullable=True)
+    is_active = Column(Boolean, default=True)
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+
+class AppUser(Base):
+    __tablename__ = "app_users"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_principal_name = Column(String(255), unique=True, index=True)
+    display_name = Column(String(255))
+    tenant_id = Column(String(100), index=True)
+    roles_json = Column(Text, default="[]") # JSON array of assigned roles: ExchangeAdmin, SharePointAdmin, etc.
+    access_level = Column(String(50), default="Read-Only") # Read-Only, Member, Admin
+    is_active = Column(Boolean, default=True)
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+    last_login_at = Column(DateTime, default=datetime.datetime.utcnow)
+
+class ModulePhaseConfig(Base):
+    __tablename__ = "module_phase_configs"
+
+    id = Column(Integer, primary_key=True, index=True)
+    module_key = Column(String(50), unique=True, index=True) # exchange, sharepoint, teams, security, license, legal_hold
+    module_name = Column(String(100))
+    active_phase = Column(String(50), default="PHASE_1_REPORTING") # PHASE_1_REPORTING, PHASE_2_SEMI_AUTOMATED, PHASE_3_FULLY_AUTOMATED
+    updated_by = Column(String(255), default="admin@contoso.com")
+    updated_at = Column(DateTime, default=datetime.datetime.utcnow)
+
+class IntuneVulnerability(Base):
+    __tablename__ = "intune_vulnerabilities"
+
+    id = Column(Integer, primary_key=True, index=True)
+    cve_id = Column(String(50), index=True)
+    title = Column(String(255))
+    severity = Column(String(20), default="HIGH") # CRITICAL, HIGH, MEDIUM, LOW
+    cvss_score = Column(Float, default=7.5)
+    affected_device_type = Column(String(100)) # Windows 11, iOS 17, Android 14
+    affected_count = Column(Integer, default=1)
+    remediation_steps = Column(Text)
+    tenant_id = Column(String(100), default="contoso.com")
+    is_remediated = Column(Boolean, default=False)
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+

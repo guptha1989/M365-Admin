@@ -77,6 +77,16 @@
             <button class="m365-icon-btn" id="btn-top-feedback" title="Give Feedback">💬</button>
             <button class="m365-icon-btn" id="btn-top-notifications" title="Notifications">🔔</button>
             <span class="m365-org-badge" id="m365-org-badge">HCL Test</span>
+            <!-- Tenant & Domain Filter Dropdown -->
+            <div style="display: flex; align-items: center; gap: 6px; background: rgba(255,255,255,0.12); padding: 2px 8px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.2);">
+                <span style="font-size: 0.8rem; color: #cbd5e1; font-weight: 600;">Tenant:</span>
+                <select id="tenant-filter-select" class="m365-tenant-dropdown" style="background: transparent; border: none; color: #ffffff; font-size: 0.82rem; font-weight: 600; outline: none; cursor: pointer;">
+                    <option value="ALL" style="background: #1e293b; color: #fff;">🌐 All Tenants (Aggregated)</option>
+                    <option value="contoso.com" style="background: #1e293b; color: #fff;">🏢 Contoso Corp (contoso.com)</option>
+                    <option value="fabrikam.com" style="background: #1e293b; color: #fff;">🏭 Fabrikam Inc (fabrikam.com)</option>
+                    <option value="litware.com" style="background: #1e293b; color: #fff;">🚀 Litware Ltd (litware.com)</option>
+                </select>
+            </div>
             <button class="m365-icon-btn" id="btn-top-settings" title="Settings">⚙️</button>
             <button class="m365-icon-btn" id="btn-top-help" title="Help">?</button>
             <div class="m365-user-avatar" id="m365-user-avatar" title="Signed in as Administrator (SG)">SG</div>
@@ -103,6 +113,9 @@
                         </a>
                         <a href="#failed-updates" class="nav-item" data-module="failed-updates">
                             <span class="icon">⚠️</span> Failed Updates Report
+                        </a>
+                        <a href="#intune-vulnerabilities" class="nav-item" data-module="intune-vulnerabilities">
+                            <span class="icon">🛡️</span> Intune Vulnerability Report
                         </a>
                     </div>
                 </div>
@@ -303,6 +316,12 @@
                         </a>
                         <a href="#outages" class="nav-item" data-module="outages">
                             <span class="icon">🌐</span> M365 Service Outage Map
+                        </a>
+                        <a href="#settings" class="nav-item" data-module="settings">
+                            <span class="icon">⚙️</span> Settings & Configuration
+                        </a>
+                        <a href="#api-permissions-audit" class="nav-item" data-module="api-permissions-audit">
+                            <span class="icon">🔑</span> API Scope & Permissions Audit
                         </a>
                     </div>
                 </div>

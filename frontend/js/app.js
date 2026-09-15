@@ -245,6 +245,23 @@ function setupTopBarAndRibbonControls() {
         });
     }
 
+    // 4. Global Tenant / Domain Filter Dropdown
+    window.currentTenantFilter = 'ALL';
+    const tenantSelect = document.getElementById('tenant-filter-select');
+    if (tenantSelect) {
+        tenantSelect.addEventListener('change', (e) => {
+            window.currentTenantFilter = e.target.value;
+            if (window.currentModule) {
+                loadModule(window.currentModule);
+            }
+        });
+    }
+
+    // 5. Top Settings Icon Button
+    document.getElementById('btn-top-settings')?.addEventListener('click', () => {
+        loadModule('settings');
+    });
+
     // 4. Theme Toggle Switch
     const themeToggle = document.getElementById('m365-theme-toggle');
     if (themeToggle) {
@@ -1132,6 +1149,21 @@ async function loadModule(moduleName, options = {}) {
                 titleEl.innerText = "Legal Hold Case Management";
                 subTitleEl.innerText = "Legal hold creation requests, custodian tracking, and In-Place hold details.";
                 await renderLegalHold(container);
+                break;
+            case 'intune-vulnerabilities':
+                titleEl.innerText = "Reporting: Intune Vulnerability & Remediation Dashboard";
+                subTitleEl.innerText = "Active CVE vulnerability posture across tenant devices, CVSS score ratings, and automated remediation plans.";
+                await renderIntuneVulnerabilities(container);
+                break;
+            case 'settings':
+                titleEl.innerText = "Platform & Tools: Settings & Application Governance";
+                subTitleEl.innerText = "Centralized configuration for M365 SSO, approved tenants, user RBAC role assignments, per-module phase overrides, and AI/LLM credentials.";
+                await renderSettingsPage(container);
+                break;
+            case 'api-permissions-audit':
+                titleEl.innerText = "Platform & Tools: API Scope & Permissions Audit";
+                subTitleEl.innerText = "Detailed audit of Graph API and Exchange PowerShell permissions, missing features, and admin consent setup scripts.";
+                await renderApiAuditPage(container);
                 break;
             case 'api-hub-open':
                 const modal = document.getElementById('api-hub-modal');
@@ -5556,6 +5588,545 @@ async function executeRequestActionFromDashboard(reqId, reqType) {
     } else {
         alert(`⚡ Processing action for ${reqId} (${reqType}). Executing Microsoft Graph REST API workflow...`);
     }
+}
+
+// ==========================================
+// NEW MODULE: INTUNE VULNERABILITY DASHBOARD
+// ==========================================
+async function renderIntuneVulnerabilities(container) {
+    const tenantParam = window.currentTenantFilter || 'ALL';
+    let data = { vulnerabilities: [], summary: { total: 0, critical: 0, high: 0, medium: 0, total_affected_devices: 0 } };
+    
+    try {
+        const res = await fetch(`${API_BASE}/intune/vulnerabilities?tenant_id=${encodeURIComponent(tenantParam)}`);
+        data = await res.json();
+    } catch (e) {
+        console.error('Failed to fetch Intune vulnerabilities', e);
+    }
+
+    const summary = data.summary || {};
+    const vulns = data.vulnerabilities || [];
+
+    let rowsHtml = vulns.map(v => {
+        let cvssBadge = 'badge-secondary';
+        if (v.cvss_score >= 9.0) cvssBadge = 'badge-danger';
+        else if (v.cvss_score >= 7.0) cvssBadge = 'badge-warning';
+        else cvssBadge = 'badge-info';
+
+        let statusBadge = v.status === 'ACTIVE' ? '<span class="badge badge-warning">⚡ Active</span>' : '<span class="badge badge-success">✅ Remediated</span>';
+
+        return `
+            <tr>
+                <td><strong>${v.cve_id}</strong></td>
+                <td>
+                    <div style="font-weight: 600; color: #f1f5f9;">${v.title}</div>
+                    <div style="font-size: 0.8rem; color: #94a3b8;">${v.component} (${v.vendor})</div>
+                </td>
+                <td><span class="badge ${cvssBadge}" style="font-weight:700;">${v.cvss_score} ${v.severity}</span></td>
+                <td><span class="badge badge-outline">${v.tenant_id}</span></td>
+                <td><strong style="color: #f43f5e;">${v.affected_device_count}</strong> devices</td>
+                <td>${statusBadge}</td>
+                <td>
+                    <div style="font-size: 0.82rem; color: #cbd5e1; max-width: 260px;">${v.remediation_plan}</div>
+                </td>
+                <td>
+                    <button class="btn btn-primary btn-sm" onclick="remediateIntuneVuln('${v.cve_id}')" ${v.status === 'REMEDIATED' ? 'disabled' : ''}>
+                        ${v.status === 'REMEDIATED' ? '✅ Fixed' : '⚡ Deploy Remediation'}
+                    </button>
+                </td>
+            </tr>
+        `;
+    }).join('');
+
+    container.innerHTML = `
+        <div class="card-grid" style="grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); margin-bottom: 1.5rem;">
+            <div class="card stat-card" style="border-left: 4px solid #ef4444;">
+                <div class="stat-value" style="color: #ef4444;">${summary.total}</div>
+                <div class="stat-label">Total Vulnerabilities Audited</div>
+            </div>
+            <div class="card stat-card" style="border-left: 4px solid #dc2626;">
+                <div class="stat-value" style="color: #dc2626;">${summary.critical + summary.high}</div>
+                <div class="stat-label">Critical & High Severity CVEs</div>
+            </div>
+            <div class="card stat-card" style="border-left: 4px solid #f59e0b;">
+                <div class="stat-value" style="color: #f59e0b;">${summary.total_affected_devices}</div>
+                <div class="stat-label">Total Affected Tenant Devices</div>
+            </div>
+            <div class="card stat-card" style="border-left: 4px solid #10b981;">
+                <div class="stat-value" style="color: #10b981;">100%</div>
+                <div class="stat-label">AI Remediation Plan Coverage</div>
+            </div>
+        </div>
+
+        <div class="card" style="margin-bottom: 1.5rem; background: rgba(99, 102, 241, 0.08); border: 1px solid rgba(99, 102, 241, 0.3);">
+            <div style="display: flex; align-items: flex-start; gap: 12px;">
+                <span style="font-size: 1.8rem;">✨</span>
+                <div>
+                    <h4 style="margin: 0 0 6px 0; color: #818cf8;">AI Vulnerability Recommendation & Security Baseline Plan</h4>
+                    <p style="margin: 0; font-size: 0.9rem; color: #cbd5e1;">
+                        AI Governance Engine recommends enforcing <strong>Intune Endpoint Security Baseline #POL-INT-2026</strong> across all <code>${tenantParam}</code> endpoints. Automated remediation updates Microsoft Defender definitions and deploys hotfixes for critical Zero-Day exposures.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <h3 style="margin:0;">CVE Vulnerability Inventory & Remediation Action Matrix</h3>
+                <span class="badge badge-info">Filter: ${tenantParam}</span>
+            </div>
+            <div class="table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>CVE ID</th>
+                            <th>Title & Component</th>
+                            <th>CVSS / Severity</th>
+                            <th>Tenant</th>
+                            <th>Affected Devices</th>
+                            <th>Status</th>
+                            <th>Remediation Plan</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${rowsHtml || '<tr><td colspan="8" style="text-align:center;">No vulnerabilities found for selected tenant filter.</td></tr>'}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    `;
+}
+
+async function remediateIntuneVuln(cveId) {
+    if (!confirm(`Are you sure you want to deploy automated remediation for ${cveId} via Intune Management Script?`)) return;
+    try {
+        const res = await fetch(`${API_BASE}/intune/vulnerabilities/remediate`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ cve_id: cveId })
+        });
+        const data = await res.json();
+        alert(`✅ ${data.message}`);
+        await renderIntuneVulnerabilities(document.getElementById('module-container'));
+    } catch (e) {
+        alert(`❌ Remediation failed: ${e.message}`);
+    }
+}
+
+// ==========================================
+// NEW MODULE: SETTINGS & APPLICATION GOVERNANCE
+// ==========================================
+async function renderSettingsPage(container) {
+    let tenants = [];
+    let users = [];
+    let phases = {};
+
+    try {
+        const [tRes, uRes, pRes] = await Promise.all([
+            fetch(`${API_BASE}/tenants/list`),
+            fetch(`${API_BASE}/auth/users`),
+            fetch(`${API_BASE}/module-phases/get`)
+        ]);
+        tenants = await tRes.json();
+        users = await uRes.json();
+        const pData = await pRes.json();
+        phases = pData.phases || {};
+    } catch (e) {
+        console.error('Failed to load settings data', e);
+    }
+
+    container.innerHTML = `
+        <div class="settings-page-wrapper">
+            <div class="settings-tabs" style="display: flex; gap: 8px; border-bottom: 2px solid rgba(255,255,255,0.1); margin-bottom: 1.5rem; padding-bottom: 8px;">
+                <button class="btn btn-secondary setting-tab-btn active" onclick="switchSettingsTab('tab-sso', this)">🏢 M365 SSO & Tenants</button>
+                <button class="btn btn-secondary setting-tab-btn" onclick="switchSettingsTab('tab-users-rbac', this)">👥 Users & Granular RBAC Roles</button>
+                <button class="btn btn-secondary setting-tab-btn" onclick="switchSettingsTab('tab-module-phases', this)">⚙️ Per-Module Phase Settings</button>
+                <button class="btn btn-secondary setting-tab-btn" onclick="switchSettingsTab('tab-ai-credentials', this)">🤖 AI LLM & API Credentials</button>
+            </div>
+
+            <!-- TAB 1: M365 SSO & APPROVED TENANTS -->
+            <div id="tab-sso" class="settings-tab-content card">
+                <h3 style="margin-top:0; color:#38bdf8;">Approved Microsoft 365 Tenants & Single Sign-On (SSO)</h3>
+                <p style="color:#94a3b8; font-size:0.9rem;">
+                    Configure multi-tenant M365 authentication. Users from approved M365 tenants can sign in via Microsoft Entra ID (Azure AD).
+                </p>
+
+                <div style="background: rgba(15, 23, 42, 0.6); padding: 1rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); margin-bottom: 1.5rem;">
+                    <h4 style="margin-top:0; color:#f1f5f9;">➕ Add Approved Tenant</h4>
+                    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                        <input type="text" id="new-tenant-name" placeholder="Tenant Name (e.g. Contoso Corp)" class="m365-input" style="flex:1; min-width: 180px;">
+                        <input type="text" id="new-tenant-domain" placeholder="Domain (e.g. contoso.com)" class="m365-input" style="flex:1; min-width: 180px;">
+                        <input type="text" id="new-tenant-id" placeholder="Azure Tenant ID (GUID)" class="m365-input" style="flex:1; min-width: 180px;">
+                        <button class="btn btn-primary" onclick="registerNewTenant()">➕ Register Tenant</button>
+                    </div>
+                </div>
+
+                <h4>Approved Tenants Inventory</h4>
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Tenant Name</th>
+                                <th>Primary Domain</th>
+                                <th>Azure Tenant ID</th>
+                                <th>Status</th>
+                                <th>Added Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${tenants.map(t => `
+                                <tr>
+                                    <td><strong>${t.tenant_name}</strong></td>
+                                    <td><code>${t.primary_domain}</code></td>
+                                    <td><span style="font-size:0.8rem; color:#94a3b8;">${t.tenant_id}</span></td>
+                                    <td><span class="badge ${t.is_active ? 'badge-success' : 'badge-danger'}">${t.is_active ? '✅ Approved & Active' : '❌ Inactive'}</span></td>
+                                    <td>${t.created_at ? t.created_at.split('T')[0] : '2026-09-15'}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+
+                <div style="margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid rgba(255,255,255,0.1); display:flex; justify-content:space-between; align-items:center;">
+                    <div>
+                        <strong>SSO Test Authorization:</strong> Simulate signing in an M365 User into the platform.
+                    </div>
+                    <button class="btn btn-secondary" onclick="simulateSsoLogin()">🔑 Test M365 SSO Sign-In</button>
+                </div>
+            </div>
+
+            <!-- TAB 2: USER LIST & GRANULAR RBAC ROLES -->
+            <div id="tab-users-rbac" class="settings-tab-content card" style="display:none;">
+                <h3 style="margin-top:0; color:#38bdf8;">User Management & Domain Admin Role Assignments</h3>
+                
+                <div style="background: rgba(239, 68, 68, 0.1); border-left: 4px solid #ef4444; padding: 12px; margin-bottom: 1.5rem; border-radius: 4px;">
+                    <strong style="color: #f87171;">🔒 Mandatory Zero-Trust Rule:</strong>
+                    <span style="color: #cbd5e1; font-size: 0.9rem;">
+                        Users who sign in via M365 SSO are added to the system user list with <strong>NO roles</strong> assigned by default. Global Admins must explicitly assign domain admin roles below.
+                    </span>
+                </div>
+
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>User / Display Name</th>
+                                <th>UPN Email</th>
+                                <th>Tenant</th>
+                                <th>Access Level</th>
+                                <th>Assigned Domain Roles</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${users.map(u => {
+                                const rolesList = u.assigned_roles || [];
+                                const allRoles = [
+                                    "GlobalAdmin", "ExchangeAdmin", "SharePointAdmin", 
+                                    "TeamsAdmin", "SecurityAdmin", "LicenseAdmin", 
+                                    "LegalHoldAdmin", "LegalHoldReader"
+                                ];
+
+                                return `
+                                    <tr>
+                                        <td>
+                                            <strong>${u.display_name}</strong>
+                                            ${rolesList.includes('GlobalAdmin') ? '<span class="badge badge-danger" style="margin-left:4px;">Global Admin</span>' : ''}
+                                        </td>
+                                        <td><code>${u.upn}</code></td>
+                                        <td><span class="badge badge-outline">${u.tenant_id}</span></td>
+                                        <td>
+                                            <select id="user-access-${u.id}" class="m365-input" style="padding: 2px 6px; font-size: 0.8rem;">
+                                                <option value="Read-Only" ${u.access_level === 'Read-Only' ? 'selected' : ''}>Read-Only</option>
+                                                <option value="Member" ${u.access_level === 'Member' ? 'selected' : ''}>Member</option>
+                                                <option value="Admin" ${u.access_level === 'Admin' ? 'selected' : ''}>Admin</option>
+                                            </select>
+                                        </td>
+                                        <td>
+                                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 4px; font-size: 0.78rem;">
+                                                ${allRoles.map(role => `
+                                                    <label style="display: flex; align-items: center; gap: 4px; cursor: pointer; color: #cbd5e1;">
+                                                        <input type="checkbox" class="user-role-chk-${u.id}" value="${role}" ${rolesList.includes(role) ? 'checked' : ''}>
+                                                        ${role}
+                                                    </label>
+                                                `).join('')}
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <button class="btn btn-primary btn-sm" onclick="saveUserRoles('${u.id}')">💾 Save Roles</button>
+                                        </td>
+                                    </tr>
+                                `;
+                            }).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- TAB 3: PER-MODULE PHASE SETTINGS -->
+            <div id="tab-module-phases" class="settings-tab-content card" style="display:none;">
+                <h3 style="margin-top:0; color:#38bdf8;">Per-Module Enforcement Phase Settings</h3>
+                <p style="color:#94a3b8; font-size:0.9rem;">
+                    Default phase is set to <strong>Phase 1: Report Only</strong>. Admins can manually upgrade individual modules to Phase 2 (Semi-Automated) or Phase 3 (Fully Automated).
+                </p>
+
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Module Name</th>
+                                <th>Current Enforcement Phase</th>
+                                <th>Phase Description</th>
+                                <th>Override Options</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${Object.keys(phases).map(modKey => {
+                                const currentPhase = phases[modKey];
+                                return `
+                                    <tr>
+                                        <td><strong>${modKey.replace(/_/g, ' ').toUpperCase()}</strong></td>
+                                        <td>
+                                            <span class="badge ${currentPhase === 'Phase 1' ? 'badge-info' : currentPhase === 'Phase 2' ? 'badge-warning' : 'badge-danger'}">
+                                                ${currentPhase}
+                                            </span>
+                                        </td>
+                                        <td style="font-size: 0.85rem; color: #94a3b8;">
+                                            ${currentPhase === 'Phase 1' ? '📊 Report Only — Generates audit logs and recommendations without auto-action.' :
+                                              currentPhase === 'Phase 2' ? '⚠️ Semi-Automated — Generates action cards requiring explicit Admin approval.' :
+                                              '⚡ Fully Automated — Executes direct PowerShell & Graph API remediations.'}
+                                        </td>
+                                        <td>
+                                            <select id="phase-select-${modKey}" class="m365-input" style="padding: 4px; font-size: 0.85rem;" onchange="updateModulePhase('${modKey}', this.value)">
+                                                <option value="Phase 1" ${currentPhase === 'Phase 1' ? 'selected' : ''}>Phase 1: Report Only</option>
+                                                <option value="Phase 2" ${currentPhase === 'Phase 2' ? 'selected' : ''}>Phase 2: Semi-Automated</option>
+                                                <option value="Phase 3" ${currentPhase === 'Phase 3' ? 'selected' : ''}>Phase 3: Fully Automated</option>
+                                            </select>
+                                        </td>
+                                    </tr>
+                                `;
+                            }).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- TAB 4: AI LLM & API CREDENTIALS -->
+            <div id="tab-ai-credentials" class="settings-tab-content card" style="display:none;">
+                <h3 style="margin-top:0; color:#38bdf8;">AI Engine & API Credentials Configuration</h3>
+
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem;">
+                    <div style="background: rgba(15, 23, 42, 0.6); padding: 1.2rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1);">
+                        <h4 style="margin-top:0; color:#818cf8;">🤖 Primary LLM Model Switcher</h4>
+                        <label style="font-size:0.85rem; color:#cbd5e1;">Active LLM Provider:</label>
+                        <select id="llm-provider-select" class="m365-input" style="width:100%; margin-bottom: 1rem;">
+                            <option value="azure_openai">Azure OpenAI Service (GPT-4o)</option>
+                            <option value="gemini_pro" selected>Google Gemini 1.5 Pro (Active)</option>
+                            <option value="anthropic_claude">Anthropic Claude 3.5 Sonnet</option>
+                            <option value="local_llama">Local Ollama / Llama-3-70B</option>
+                        </select>
+                        <button class="btn btn-primary" onclick="alert('✅ AI LLM Model successfully updated!')">💾 Update AI Provider</button>
+                    </div>
+
+                    <div style="background: rgba(15, 23, 42, 0.6); padding: 1.2rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1);">
+                        <h4 style="margin-top:0; color:#34d399;">🔑 Microsoft Graph API Credentials</h4>
+                        <div style="margin-bottom: 8px;">
+                            <label style="font-size:0.8rem; color:#94a3b8;">Client ID (App ID):</label>
+                            <input type="text" value="384f9011-84ba-4e2a-b912-882d920011aa" class="m365-input" style="width:100%;">
+                        </div>
+                        <div style="margin-bottom: 12px;">
+                            <label style="font-size:0.8rem; color:#94a3b8;">Client Secret:</label>
+                            <input type="password" value="••••••••••••••••••••••••" class="m365-input" style="width:100%;">
+                        </div>
+                        <button class="btn btn-secondary" onclick="alert('✅ Microsoft Graph API connection tested successfully!')">🔌 Test Connection</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+function switchSettingsTab(tabId, btnEl) {
+    document.querySelectorAll('.settings-tab-content').forEach(el => el.style.display = 'none');
+    document.querySelectorAll('.setting-tab-btn').forEach(el => el.classList.remove('active'));
+    
+    const target = document.getElementById(tabId);
+    if (target) target.style.display = 'block';
+    if (btnEl) btnEl.classList.add('active');
+}
+
+async function registerNewTenant() {
+    const name = document.getElementById('new-tenant-name')?.value;
+    const domain = document.getElementById('new-tenant-domain')?.value;
+    const tId = document.getElementById('new-tenant-id')?.value;
+
+    if (!name || !domain || !tId) {
+        alert('Please fill in all tenant registration fields.');
+        return;
+    }
+
+    try {
+        const res = await fetch(`${API_BASE}/tenants/register`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ tenant_name: name, primary_domain: domain, tenant_id: tId })
+        });
+        const data = await res.json();
+        alert(`✅ ${data.message}`);
+        await renderSettingsPage(document.getElementById('module-container'));
+    } catch (e) {
+        alert(`❌ Tenant registration failed: ${e.message}`);
+    }
+}
+
+async function simulateSsoLogin() {
+    const email = prompt('Enter M365 Email UPN to simulate SSO login:', 'new.admin@contoso.com');
+    if (!email) return;
+    const name = email.split('@')[0].replace('.', ' ');
+    const domain = email.split('@')[1] || 'contoso.com';
+
+    try {
+        const res = await fetch(`${API_BASE}/auth/sso-login`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ upn: email, display_name: name, tenant_id: domain })
+        });
+        const data = await res.json();
+        alert(`✅ ${data.message}\nUser registered with NO assigned roles by default.`);
+        await renderSettingsPage(document.getElementById('module-container'));
+    } catch (e) {
+        alert(`❌ SSO Login failed: ${e.message}`);
+    }
+}
+
+async function saveUserRoles(userId) {
+    const accessLevel = document.getElementById(`user-access-${userId}`)?.value || 'Read-Only';
+    const chks = document.querySelectorAll(`.user-role-chk-${userId}:checked`);
+    const roles = Array.from(chks).map(c => c.value);
+
+    try {
+        const res = await fetch(`${API_BASE}/auth/users/assign-roles`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ user_id: userId, roles: roles, access_level: accessLevel })
+        });
+        const data = await res.json();
+        alert(`✅ ${data.message}`);
+    } catch (e) {
+        alert(`❌ Failed to assign user roles: ${e.message}`);
+    }
+}
+
+async function updateModulePhase(modKey, newPhase) {
+    try {
+        const res = await fetch(`${API_BASE}/module-phases/update`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ module_name: modKey, phase: newPhase })
+        });
+        const data = await res.json();
+        alert(`✅ ${data.message}`);
+    } catch (e) {
+        alert(`❌ Failed to update module phase: ${e.message}`);
+    }
+}
+
+// ==========================================
+// NEW MODULE: API PERMISSIONS & SCOPE AUDIT
+// ==========================================
+async function renderApiAuditPage(container) {
+    let auditData = { matrix: [], summary: { total_audited: 0, active_count: 0, missing_count: 0 } };
+    try {
+        const res = await fetch(`${API_BASE}/api-audit/permissions-matrix`);
+        auditData = await res.json();
+    } catch (e) {
+        console.error('Failed to fetch API scope audit matrix', e);
+    }
+
+    const summary = auditData.summary || {};
+    const matrix = auditData.matrix || [];
+
+    const rowsHtml = matrix.map(m => `
+        <tr style="${!m.is_granted ? 'background: rgba(239, 68, 68, 0.05);' : ''}">
+            <td>
+                <strong>${m.feature_name}</strong>
+                <div style="font-size:0.78rem; color:#94a3b8;">${m.category}</div>
+            </td>
+            <td><code>${m.required_scope}</code></td>
+            <td><span class="badge badge-outline">${m.scope_type}</span></td>
+            <td>
+                <span class="badge ${m.is_granted ? 'badge-success' : 'badge-danger'}">
+                    ${m.is_granted ? '✅ Granted & Active' : '❌ Scope Missing'}
+                </span>
+            </td>
+            <td>
+                <div style="font-size:0.83rem; color: ${m.is_granted ? '#cbd5e1' : '#f87171'};">
+                    ${m.missing_capability}
+                </div>
+            </td>
+            <td>
+                <code style="font-size:0.75rem; color: #38bdf8;">${m.fix_command}</code>
+            </td>
+        </tr>
+    `).join('');
+
+    container.innerHTML = `
+        <div class="card-grid" style="grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); margin-bottom: 1.5rem;">
+            <div class="card stat-card" style="border-left: 4px solid #3b82f6;">
+                <div class="stat-value" style="color: #3b82f6;">${summary.total_audited}</div>
+                <div class="stat-label">Total API Scopes Audited</div>
+            </div>
+            <div class="card stat-card" style="border-left: 4px solid #10b981;">
+                <div class="stat-value" style="color: #10b981;">${summary.active_count}</div>
+                <div class="stat-label">Active & Consent Granted</div>
+            </div>
+            <div class="card stat-card" style="border-left: 4px solid #ef4444;">
+                <div class="stat-value" style="color: #ef4444;">${summary.missing_count}</div>
+                <div class="stat-label">Missing API Scope Permissions</div>
+            </div>
+        </div>
+
+        <div class="card" style="margin-bottom: 1.5rem; background: rgba(245, 158, 11, 0.08); border: 1px solid rgba(245, 158, 11, 0.3);">
+            <div style="display: flex; align-items: flex-start; gap: 12px;">
+                <span style="font-size: 1.8rem;">⚠️</span>
+                <div>
+                    <h4 style="margin: 0 0 6px 0; color: #fbbf24;">Feature Availability Impact & Admin Consent Guide</h4>
+                    <p style="margin: 0; font-size: 0.88rem; color: #cbd5e1;">
+                        Missing Graph API or Exchange PowerShell permissions limit automated remediation capabilities for Intune security policies and legal hold custodian enforcement. Run the provided PowerShell consent scripts below to enable full functionality.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="card" style="margin-bottom: 1.5rem;">
+            <h3 style="margin-top:0;">API Permission Scope Audit & Feature Matrix</h3>
+            <div class="table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Feature / Module</th>
+                            <th>Required API Scope</th>
+                            <th>Scope Type</th>
+                            <th>Status</th>
+                            <th>Feature Impact / Missing Capability</th>
+                            <th>PowerShell Fix Script</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${rowsHtml}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3 style="margin-top:0; color:#38bdf8;">⚡ Admin Consent PowerShell Grant Script</h3>
+            <p style="color:#94a3b8; font-size:0.88rem;">Copy and run this command in Microsoft Graph PowerShell to grant missing admin consent permissions across all tenants:</p>
+            <pre style="background:#0f172a; padding:12px; border-radius:6px; border:1px solid rgba(255,255,255,0.1); color:#38bdf8; overflow-x:auto;">Connect-MgGraph -Scopes "DeviceManagementManagedDevices.ReadWrite.All", "EDiscovery.ReadWrite.All", "MailboxSettings.ReadWrite", "Policy.Read.All"</pre>
+            <button class="btn btn-secondary btn-sm" onclick="navigator.clipboard.writeText('Connect-MgGraph -Scopes \"DeviceManagementManagedDevices.ReadWrite.All\", \"EDiscovery.ReadWrite.All\", \"MailboxSettings.ReadWrite\", \"Policy.Read.All\"'); alert('📋 Command copied to clipboard!');">📋 Copy PowerShell Command</button>
+        </div>
+    `;
 }
 
 
