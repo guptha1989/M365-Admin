@@ -261,8 +261,55 @@ class MicrosoftGraphClient:
             ]
         }
 
+    def get_intune_managed_devices(self) -> List[Dict[str, Any]]:
+        """Fetch live enrolled Intune managed devices via Microsoft Graph API."""
+        token = self.get_access_token()
+        if token:
+            try:
+                headers = {"Authorization": f"Bearer {token}"}
+                url = "https://graph.microsoft.com/v1.0/deviceManagement/managedDevices?$top=100&$select=id,deviceName,userPrincipalName,userDisplayName,operatingSystem,osVersion,complianceState,serialNumber,lastSyncDateTime,model,manufacturer"
+                r = requests.get(url, headers=headers, timeout=10)
+                if r.status_code == 200:
+                    raw_devs = r.json().get("value", [])
+                    devices = []
+                    for idx, d in enumerate(raw_devs):
+                        devices.append({
+                            "id": d.get("id") or f"dev-{idx+1:03d}",
+                            "device_name": d.get("deviceName") or f"WIN11-DEV-{idx+1:02d}",
+                            "primary_user": d.get("userPrincipalName") or d.get("userDisplayName") or "unassigned@contoso.com",
+                            "department": "IT/Managed",
+                            "os_version": f"{d.get('operatingSystem', 'Windows')} {d.get('osVersion', '11')}",
+                            "serial_number": d.get("serialNumber") or f"SN-{100000 + idx}",
+                            "compliance_status": d.get("complianceState", "compliant"),
+                            "status_color": "success" if d.get("complianceState") == "compliant" else "danger",
+                            "last_intune_sync": d.get("lastSyncDateTime", datetime.datetime.now().isoformat())
+                        })
+                    if devices:
+                        return self._apply_env_cap(devices)
+            except Exception as e:
+                logger.warning(f"Live Graph API Intune managedDevices query failed: {e}")
+        return []
+
     def get_intune_defender_vulnerability_report(self) -> List[Dict[str, Any]]:
         """Cross-reference Azure Intune device API data with M365 Defender CVE vulnerability APIs."""
+        token = self.get_access_token()
+        if token:
+            try:
+                headers = {"Authorization": f"Bearer {token}"}
+                r = requests.get("https://graph.microsoft.com/v1.0/security/vulnerabilities?$top=10", headers=headers, timeout=10)
+                if r.status_code == 200:
+                    raw = r.json().get("value", [])
+                    if raw:
+                        return [{
+                            "cveId": v.get("id"),
+                            "severity": v.get("severity", "HIGH").upper(),
+                            "title": v.get("name") or v.get("description"),
+                            "affectedDevices": len(v.get("affectedComponents", [])) or 10,
+                            "patchAvailable": True
+                        } for v in raw]
+            except Exception as e:
+                logger.warning(f"Live Graph API Security Vulnerabilities query failed: {e}")
+
         vulns = [
             {"cveId": "CVE-2026-21412", "severity": "CRITICAL", "title": "Windows SmartScreen Security Feature Bypass", "affectedDevices": 14 if self.env == "PROD" else 3, "patchAvailable": True},
             {"cveId": "CVE-2026-28901", "severity": "HIGH", "title": "Exchange Server Remote Code Execution", "affectedDevices": 4 if self.env == "PROD" else 1, "patchAvailable": True},

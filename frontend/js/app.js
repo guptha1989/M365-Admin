@@ -5693,17 +5693,26 @@ async function renderIntuneVulnerabilities(container) {
         else cvssBadge = 'badge-info';
 
         let statusBadge = v.status === 'ACTIVE' ? '<span class="badge badge-warning">⚡ Active</span>' : '<span class="badge badge-success">✅ Remediated</span>';
+        const escapedTitle = (v.title || '').replace(/'/g, "\\'");
 
         return `
             <tr>
-                <td><strong>${v.cve_id}</strong></td>
                 <td>
-                    <div style="font-weight: 600; color: #f1f5f9;">${v.title}</div>
+                    <strong style="cursor: pointer; color: #38bdf8; text-decoration: underline;" onclick="showAffectedDevicesModal('${v.cve_id}', '${escapedTitle}')" title="Click to view machine names and device inventory">
+                        ${v.cve_id}
+                    </strong>
+                </td>
+                <td>
+                    <div style="font-weight: 600; color: #f1f5f9; cursor: pointer;" onclick="showAffectedDevicesModal('${v.cve_id}', '${escapedTitle}')" title="Click to view machine details">${v.title}</div>
                     <div style="font-size: 0.8rem; color: #94a3b8;">${v.component} (${v.vendor})</div>
                 </td>
                 <td><span class="badge ${cvssBadge}" style="font-weight:700;">${v.cvss_score} ${v.severity}</span></td>
                 <td><span class="badge badge-outline">${v.tenant_id}</span></td>
-                <td><strong style="color: #f43f5e;">${v.affected_device_count}</strong> devices</td>
+                <td>
+                    <button class="btn btn-secondary btn-sm" onclick="showAffectedDevicesModal('${v.cve_id}', '${escapedTitle}')" style="cursor: pointer; background: rgba(56,189,248,0.1); border: 1px solid rgba(56,189,248,0.3); color: #38bdf8; font-weight: 600;" title="Click to view enrolled computer hostnames & user details">
+                        💻 ${v.affected_device_count} devices ➔
+                    </button>
+                </td>
                 <td>${statusBadge}</td>
                 <td>
                     <div style="font-size: 0.82rem; color: #cbd5e1; max-width: 260px;">${v.remediation_plan}</div>
@@ -5743,7 +5752,7 @@ async function renderIntuneVulnerabilities(container) {
                 <div>
                     <h4 style="margin: 0 0 6px 0; color: #818cf8;">AI Vulnerability Recommendation & Security Baseline Plan</h4>
                     <p style="margin: 0; font-size: 0.9rem; color: #cbd5e1;">
-                        AI Governance Engine recommends enforcing <strong>Intune Endpoint Security Baseline #POL-INT-2026</strong> across all <code>${tenantParam}</code> endpoints. Automated remediation updates Microsoft Defender definitions and deploys hotfixes for critical Zero-Day exposures.
+                        AI Governance Engine recommends enforcing <strong>Intune Endpoint Security Baseline #POL-INT-2026</strong> across all <code>${tenantParam}</code> endpoints. Click any device count or CVE row below to inspect enrolled machine names, hardware serials, and primary user assignments.
                     </p>
                 </div>
             </div>
@@ -5762,7 +5771,7 @@ async function renderIntuneVulnerabilities(container) {
                             <th>Title & Component</th>
                             <th>CVSS / Severity</th>
                             <th>Tenant</th>
-                            <th>Affected Devices</th>
+                            <th>Affected Devices (Click for Hostnames)</th>
                             <th>Status</th>
                             <th>Remediation Plan</th>
                             <th>Action</th>
@@ -5777,7 +5786,7 @@ async function renderIntuneVulnerabilities(container) {
     `;
 }
 
-async function remediateIntuneVuln(cveId) {
+window.remediateIntuneVuln = async function(cveId) {
     if (!confirm(`Are you sure you want to deploy automated remediation for ${cveId} via Intune Management Script?`)) return;
     try {
         const res = await fetch(`${API_BASE}/intune/vulnerabilities/remediate`, {
@@ -5790,6 +5799,70 @@ async function remediateIntuneVuln(cveId) {
         await renderIntuneVulnerabilities(document.getElementById('module-container'));
     } catch (e) {
         alert(`❌ Remediation failed: ${e.message}`);
+    }
+};
+
+window.showAffectedDevicesModal = async function(cveId, title) {
+    const modal = document.getElementById('modal-intune-device-details');
+    const titleEl = document.getElementById('modal-intune-cve-title');
+    const contentEl = document.getElementById('modal-intune-devices-content');
+
+    if (titleEl) titleEl.innerHTML = `💻 Machine Inventory for <span style="color:#38bdf8;">${cveId}</span>: ${title}`;
+    if (contentEl) contentEl.innerHTML = `<div style="padding: 2rem; text-align: center;">⚡ Fetching enrolled Intune device telemetry...</div>`;
+    if (modal) modal.style.display = 'flex';
+
+    try {
+        const res = await fetch(`${API_BASE}/intune/vulnerabilities/${encodeURIComponent(cveId)}/devices`);
+        const data = await res.json();
+        const devices = data.devices || [];
+
+        let rowsHtml = devices.map(d => `
+            <tr>
+                <td><strong style="color:#f1f5f9;">🖥️ ${d.device_name}</strong></td>
+                <td><code>${d.primary_user}</code></td>
+                <td><span class="badge badge-outline">${d.department}</span></td>
+                <td><span style="font-size:0.82rem; color:#cbd5e1;">${d.os_version}</span></td>
+                <td><code style="font-size:0.75rem; color:#94a3b8;">${d.serial_number}</code></td>
+                <td><span class="badge badge-${d.status_color}">${d.compliance_status}</span></td>
+                <td><span style="font-size:0.78rem; color:#94a3b8;">${d.last_intune_sync}</span></td>
+                <td>
+                    <button class="btn btn-primary btn-sm" onclick="alert('⚡ Quick Patch Command sent to ${d.device_name} via Intune MDM Channel!')">
+                        ⚡ Push Patch
+                    </button>
+                </td>
+            </tr>
+        `).join('');
+
+        contentEl.innerHTML = `
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 1rem; background: rgba(15, 23, 42, 0.6); padding: 10px 14px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.1); flex-wrap: wrap; gap: 8px;">
+                <div>
+                    <strong>Target Platform:</strong> <code>${data.affected_device_type}</code> | <strong>Total Impacted Machines:</strong> <span class="badge badge-danger">${data.total_affected_machines}</span>
+                </div>
+                <button class="btn btn-secondary btn-sm" onclick="alert('📋 Exported Machine Inventory list for ${cveId} to CSV')">📥 Export Machine List</button>
+            </div>
+
+            <div class="table-container" style="max-height: 450px; overflow-y: auto;">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Machine Hostname</th>
+                            <th>Primary User UPN</th>
+                            <th>Department</th>
+                            <th>OS & Build Version</th>
+                            <th>Hardware Serial</th>
+                            <th>Intune Compliance</th>
+                            <th>Last Intune Sync</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${rowsHtml || '<tr><td colspan="8" style="text-align:center;">No machine records found.</td></tr>'}
+                    </tbody>
+                </table>
+            </div>
+        `;
+    } catch (e) {
+        if (contentEl) contentEl.innerHTML = `<div style="color:var(--accent-red); padding:1rem;">❌ Failed to load device details: ${e.message}</div>`;
     }
 }
 

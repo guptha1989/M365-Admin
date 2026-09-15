@@ -893,6 +893,17 @@
                 <button class="btn btn-secondary btn-block" style="margin-top: 15px;" onclick="window.closeModal('modal-notifications'); loadModule('policy-dashboard');">📜 Open Policy Dashboard</button>
             </div>
         </div>
+    <!-- Intune Affected Devices Modal Overlay -->
+    <div class="modal-overlay" id="modal-intune-device-details" style="display: none;">
+        <div class="modal-card modal-card-wide" style="max-width: 950px; width: 95%;">
+            <div class="modal-header" style="background: linear-gradient(135deg, #0f172a, #1e293b); border-bottom: 1px solid rgba(255,255,255,0.1);">
+                <h3 id="modal-intune-cve-title" style="margin: 0; color: #38bdf8;">💻 Affected Machine Names & Device Details</h3>
+                <button class="modal-close" style="color: white;" onclick="window.closeModal('modal-intune-device-details')">&times;</button>
+            </div>
+            <div class="modal-body" id="modal-intune-devices-content" style="padding: 1.5rem;">
+                <div style="padding: 2rem; text-align: center;">⚡ Fetching machine details...</div>
+            </div>
+        </div>
     </div>
 
     <!-- Top Right Bar Modal: Tenant Org Profile -->
@@ -1227,6 +1238,6 @@
         </div>
     </div>
 
-    <script src="/static/js/app.js"></script>
+    <script src="/static/js/app.js?v=2.0.1"></script>
 </body>
 </html>
