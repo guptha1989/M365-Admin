@@ -5658,8 +5658,33 @@ async function renderIntuneVulnerabilities(container) {
         console.error('Failed to fetch Intune vulnerabilities', e);
     }
 
-    const summary = data.summary || {};
-    const vulns = data.vulnerabilities || [];
+    let vulns = [];
+    let summary = { total: 0, critical: 0, high: 0, medium: 0, total_affected_devices: 0 };
+
+    if (data && data.vulnerabilities) {
+        vulns = data.vulnerabilities;
+        summary = data.summary || summary;
+    } else {
+        const rawList = Array.isArray(data) ? data : (data.value || []);
+        vulns = rawList.map(v => ({
+            id: v.id,
+            cve_id: v.cve_id,
+            title: v.title,
+            severity: v.severity,
+            cvss_score: v.cvss_score,
+            component: v.affected_device_type || v.component || 'Windows 11',
+            vendor: v.vendor || ((v.affected_device_type || '').includes('iOS') ? 'Apple' : ((v.affected_device_type || '').includes('Android') ? 'Android' : 'Microsoft')),
+            affected_device_count: v.affected_count || v.affected_device_count || 0,
+            remediation_plan: v.remediation_steps || v.remediation_plan || '',
+            tenant_id: v.tenant_id,
+            status: (v.is_remediated || v.status === 'REMEDIATED') ? 'REMEDIATED' : 'ACTIVE'
+        }));
+        summary.total = vulns.length;
+        summary.critical = vulns.filter(v => v.severity === 'CRITICAL').length;
+        summary.high = vulns.filter(v => v.severity === 'HIGH').length;
+        summary.medium = vulns.filter(v => v.severity === 'MEDIUM').length;
+        summary.total_affected_devices = vulns.reduce((acc, v) => acc + (v.affected_device_count || 0), 0);
+    }
 
     let rowsHtml = vulns.map(v => {
         let cvssBadge = 'badge-secondary';

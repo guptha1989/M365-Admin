@@ -69,20 +69,42 @@ def get_intune_vulnerabilities(
     if tenant_id and tenant_id != "ALL":
         query = query.filter(IntuneVulnerability.tenant_id == tenant_id)
     
-    vulns = query.all()
-    return [{
-        "id": v.id,
-        "cve_id": v.cve_id,
-        "title": v.title,
-        "severity": v.severity,
-        "cvss_score": v.cvss_score,
-        "affected_device_type": v.affected_device_type,
-        "affected_count": v.affected_count,
-        "remediation_steps": v.remediation_steps,
-        "tenant_id": v.tenant_id,
-        "is_remediated": v.is_remediated,
-        "created_at": v.created_at.strftime("%Y-%m-%d %H:%M:%S") if v.created_at else ""
-    } for v in vulns]
+    vulns_db = query.all()
+    
+    total = len(vulns_db)
+    critical = sum(1 for v in vulns_db if v.severity == "CRITICAL")
+    high = sum(1 for v in vulns_db if v.severity == "HIGH")
+    medium = sum(1 for v in vulns_db if v.severity == "MEDIUM")
+    total_affected = sum(v.affected_count or 0 for v in vulns_db)
+    
+    vulnerabilities = []
+    for v in vulns_db:
+        vendor = "Apple" if "iOS" in (v.affected_device_type or "") else ("Android" if "Android" in (v.affected_device_type or "") else "Microsoft")
+        vulnerabilities.append({
+            "id": v.id,
+            "cve_id": v.cve_id,
+            "title": v.title,
+            "severity": v.severity,
+            "cvss_score": v.cvss_score,
+            "component": v.affected_device_type,
+            "vendor": vendor,
+            "affected_device_count": v.affected_count,
+            "remediation_plan": v.remediation_steps,
+            "tenant_id": v.tenant_id,
+            "status": "REMEDIATED" if v.is_remediated else "ACTIVE",
+            "created_at": v.created_at.strftime("%Y-%m-%d %H:%M:%S") if v.created_at else ""
+        })
+
+    return {
+        "summary": {
+            "total": total,
+            "critical": critical,
+            "high": high,
+            "medium": medium,
+            "total_affected_devices": total_affected
+        },
+        "vulnerabilities": vulnerabilities
+    }
 
 @router.post("/intune/vulnerabilities/remediate", summary="Execute Intune Vulnerability Patch Deployment")
 def remediate_intune_vulnerability(req: IntuneRemediateModel, db: Session = Depends(get_db)):

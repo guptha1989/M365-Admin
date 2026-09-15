@@ -187,6 +187,7 @@ class MicrosoftGraphClient:
                         dept = u.get("department") or departments[idx % len(departments)]
                         rbi_type = "VIP" if dept in ["Executive", "Legal"] else ("Frontline" if dept == "Sales" else "StandardEmployee")
                         has_lic = bool(u.get("assignedLicenses"))
+                        lic_name = "MICROSOFT 365 E5" if rbi_type == "VIP" else ("MICROSOFT 365 E3" if has_lic else "UNLICENSED")
                         users.append({
                             "id": u.get("id"),
                             "userPrincipalName": u.get("userPrincipalName"),
