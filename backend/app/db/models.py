@@ -65,14 +65,55 @@ class AutomationPolicy(Base):
     __tablename__ = "automation_policies"
 
     id = Column(Integer, primary_key=True, index=True)
-    category = Column(String(50), index=True)
+    category = Column(String(50), index=True) # LICENSE_AUTOMATION, SHAREPOINT_CLEANUP, COMPLIANCE_SECURITY
+    policy_type = Column(String(100), default="CUSTOM") # LICENSE_REMOVAL, LICENSE_DOWNGRADE, LICENSE_ASSIGNMENT, SHAREPOINT_CLEANUP, AZURE_SECURITY_ALERTS, SHAREPOINT_SENSITIVE_SHARING, EMAIL_FORWARDING_SENSITIVE
     policy_name = Column(String(255))
     phase_level = Column(String(50), default="PHASE_1_REPORTING") # PHASE_1_REPORTING, PHASE_2_SEMI_AUTOMATED, PHASE_3_FULLY_AUTOMATED
     is_enabled = Column(Boolean, default=True)
     description = Column(Text, nullable=True)
     criteria_json = Column(Text, nullable=True)
+    
+    # Alert Options
+    alert_email_enabled = Column(Boolean, default=True)
+    alert_email_recipients = Column(Text, nullable=True) # comma separated emails
+    alert_teams_enabled = Column(Boolean, default=True)
+    alert_teams_webhook = Column(Text, nullable=True)
+    daily_summary_email = Column(Boolean, default=True)
+    daily_summary_teams = Column(Boolean, default=True)
+
+    # Execution Action Config (e.g. Delete, Move to SP/OneDrive/Azure Storage)
+    action_config_json = Column(Text, nullable=True)
+
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.datetime.utcnow)
+
+class SensitiveFileType(Base):
+    __tablename__ = "sensitive_file_types"
+
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String(100), unique=True, index=True) # Credit Card Number, SSN, Passport, Financial Record, etc.
+    description = Column(Text, nullable=True)
+    extension_patterns = Column(String(255), default=".pdf,.docx,.xlsx,.csv,.doc,.xls") # file extensions
+    regex_pattern = Column(Text, nullable=True)
+    is_built_in = Column(Boolean, default=False)
+    is_active = Column(Boolean, default=True)
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+
+class PolicyAlertFinding(Base):
+    __tablename__ = "policy_alert_findings"
+
+    id = Column(Integer, primary_key=True, index=True)
+    policy_id = Column(Integer, index=True)
+    policy_name = Column(String(255))
+    category = Column(String(50), index=True)
+    target_user_or_resource = Column(String(255), index=True) # UPN, Site URL, File Path, Email Address
+    finding_description = Column(Text)
+    severity = Column(String(20), default="MEDIUM") # HIGH, MEDIUM, LOW
+    status = Column(String(50), default="TRIGGERED") # TRIGGERED, PENDING_ACTION, RESOLVED, IGNORED
+    details_json = Column(Text, nullable=True)
+    triggered_at = Column(DateTime, default=datetime.datetime.utcnow)
+    resolved_at = Column(DateTime, nullable=True)
+
 
 class TeamsConfig(Base):
     __tablename__ = "teams_configs"
@@ -120,6 +161,11 @@ class LegalHoldCase(Base):
     status = Column(String(50), default="Active")       # Requested, Active, Removed
     requested_by = Column(String(255))
     reason = Column(Text)
+    keywords = Column(Text, nullable=True)
+    time_interval_start = Column(String(50), nullable=True)
+    time_interval_end = Column(String(50), nullable=True)
+    destination_folder_url = Column(Text, nullable=True)
+    compliance_search_status = Column(String(100), default="Completed & Copied to Vault")
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
 
 class APIIntegrationConfig(Base):

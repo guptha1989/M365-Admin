@@ -58,6 +58,61 @@ class MicrosoftGraphClient:
     def get_primary_domain(self) -> str:
         """Dynamically detect the primary domain for the active tenant."""
         users = self.get_users_list()
+        if users:
+            upn = users[0].get("userPrincipalName", "")
+            if "@" in upn:
+                return upn.split("@")[1]
+        return "contoso.com"
+
+    def send_mail(
+        self,
+        to_recipients: List[str],
+        subject: str,
+        body_html: str,
+        sender_upn: Optional[str] = None
+    ) -> Dict[str, Any]:
+        """Send Email message via Microsoft Graph API sendMail endpoint (or graceful simulation)."""
+        token = self.get_access_token()
+        recipients_payload = [{"emailAddress": {"address": r.strip()}} for r in to_recipients if r and "@" in r]
+        sender = sender_upn or "admin@contoso.com"
+
+        if not token:
+            logger.info(f"[SIMULATED EMAIL] To: {to_recipients} | Subject: '{subject}'")
+            return {
+                "status": "Success",
+                "simulated": True,
+                "recipients": to_recipients,
+                "subject": subject,
+                "message": "Email alert simulated (Graph credentials not set)."
+            }
+
+        url = f"https://graph.microsoft.com/v1.0/users/{sender}/sendMail"
+        headers = {
+            "Authorization": f"Bearer {token}",
+            "Content-Type": "application/json"
+        }
+        payload = {
+            "message": {
+                "subject": subject,
+                "body": {
+                    "contentType": "HTML",
+                    "content": body_html
+                },
+                "toRecipients": recipients_payload
+            },
+            "saveToSentItems": True
+        }
+
+        try:
+            r = requests.post(url, headers=headers, json=payload, timeout=10)
+            if r.status_code in [200, 202]:
+                return {"status": "Success", "simulated": False, "recipients": to_recipients}
+            else:
+                logger.warning(f"Graph sendMail failed ({r.status_code}): {r.text}")
+                return {"status": "Failed", "error": r.text, "simulated": True}
+        except Exception as e:
+            logger.error(f"Error calling Graph sendMail: {e}")
+            return {"status": "Error", "error": str(e), "simulated": True}
         for u in users:
             upn = u.get("userPrincipalName", "")
             if "@" in upn:
@@ -163,7 +218,7 @@ class MicrosoftGraphClient:
                 "RBIusertype": rbi_type,
                 "assignedLicense": "MICROSOFT 365 E5" if rbi_type == "VIP" else "MICROSOFT 365 E3",
                 "lastLoginDate": (datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(days=i * 2)).strftime("%Y-%m-%d"),
-                "accountEnabled": True
+                "accountEnabled": (i % 5 != 0)  # Mix of Active (Enabled) and Deprovisioned (Disabled) users
             })
         return self._apply_env_cap(users)
 
@@ -746,6 +801,235 @@ class MicrosoftGraphClient:
         return {
             "total_libraries_analyzed": len(libraries),
             "libraries": libraries
+        }
+
+    def get_sharepoint_inactive_files(self, window_days: int = 90) -> Dict[str, Any]:
+        """Fetch SharePoint File-Wise Inactive Report filtered by inactivity threshold (90, 120, 180 days)."""
+        domain = self.get_primary_domain()
+        all_files = [
+            {
+                "fileName": "Q3_2023_Financial_Forecast.xlsx",
+                "siteName": "Finance Confidential",
+                "libraryName": "Financial Statements",
+                "url": f"https://{domain}.sharepoint.com/sites/finance/FinancialStatements/Q3_2023_Financial_Forecast.xlsx",
+                "fileExtension": ".xlsx",
+                "sizeMB": 450,
+                "lastAccessedDaysAgo": 95,
+                "lastAccessedDate": "2026-06-12",
+                "owner": f"finance.admin@{domain}",
+                "department": "Finance",
+                "riskStatus": "Stale File (Reclaim Target)"
+            },
+            {
+                "fileName": "Customer_Export_Backup_2023.csv",
+                "siteName": "Sales Operations",
+                "libraryName": "Client Records",
+                "url": f"https://{domain}.sharepoint.com/sites/salesops/ClientRecords/Customer_Export_Backup_2023.csv",
+                "fileExtension": ".csv",
+                "sizeMB": 920,
+                "lastAccessedDaysAgo": 102,
+                "lastAccessedDate": "2026-06-05",
+                "owner": f"sales.lead@{domain}",
+                "department": "Sales",
+                "riskStatus": "PII/DLP Stale Exposure"
+            },
+            {
+                "fileName": "Unused_Infrastructure_Specs_2023.docx",
+                "siteName": "IT Operations",
+                "libraryName": "Architecture Specs",
+                "url": f"https://{domain}.sharepoint.com/sites/itops/ArchitectureSpecs/Unused_Infrastructure_Specs_2023.docx",
+                "fileExtension": ".docx",
+                "sizeMB": 42,
+                "lastAccessedDaysAgo": 115,
+                "lastAccessedDate": "2026-05-23",
+                "owner": f"it.admin@{domain}",
+                "department": "IT Operations",
+                "riskStatus": "Low Activity File"
+            },
+            {
+                "fileName": "Executive_Strategy_Draft_2024.pptx",
+                "siteName": "Executive Leadership",
+                "libraryName": "Strategy Presentations",
+                "url": f"https://{domain}.sharepoint.com/sites/exec/StrategyPresentations/Executive_Strategy_Draft_2024.pptx",
+                "fileExtension": ".pptx",
+                "sizeMB": 78,
+                "lastAccessedDaysAgo": 128,
+                "lastAccessedDate": "2026-05-10",
+                "owner": f"vp.strategy@{domain}",
+                "department": "Executive",
+                "riskStatus": "Stale Strategic File"
+            },
+            {
+                "fileName": "HR_Training_Videos_2022.mp4",
+                "siteName": "HR Internal",
+                "libraryName": "Media Archive",
+                "url": f"https://{domain}.sharepoint.com/sites/hr/MediaArchive/HR_Training_Videos_2022.mp4",
+                "fileExtension": ".mp4",
+                "sizeMB": 6400,
+                "lastAccessedDaysAgo": 195,
+                "lastAccessedDate": "2026-03-04",
+                "owner": f"hr.director@{domain}",
+                "department": "HR",
+                "riskStatus": "Large Video Storage Reclaim"
+            },
+            {
+                "fileName": "Litigation_Deposition_Transcript_2024.pdf",
+                "siteName": "Legal Holds Archive",
+                "libraryName": "Litigation Documents",
+                "url": f"https://{domain}.sharepoint.com/sites/legalarchive/LitigationDocs/Litigation_Deposition_Transcript_2024.pdf",
+                "fileExtension": ".pdf",
+                "sizeMB": 185,
+                "lastAccessedDaysAgo": 215,
+                "lastAccessedDate": "2026-02-12",
+                "owner": f"legal.counsel@{domain}",
+                "department": "Legal",
+                "riskStatus": "Stale Legal Hold Archive"
+            },
+            {
+                "fileName": "R_and_D_CAD_Blueprint_2022.dwg",
+                "siteName": "Engineering R&D",
+                "libraryName": "CAD Schematics",
+                "url": f"https://{domain}.sharepoint.com/sites/rd/CADSchematics/R_and_D_CAD_Blueprint_2022.dwg",
+                "fileExtension": ".dwg",
+                "sizeMB": 4200,
+                "lastAccessedDaysAgo": 320,
+                "lastAccessedDate": "2025-10-30",
+                "owner": f"lead.engineer@{domain}",
+                "department": "Engineering",
+                "riskStatus": "Cold Storage Candidate"
+            },
+            {
+                "fileName": "Legacy_Marketing_Assets_2022.zip",
+                "siteName": "Legacy Marketing 2023",
+                "libraryName": "Campaign Vault",
+                "url": f"https://{domain}.sharepoint.com/sites/mkt2023/CampaignVault/Legacy_Marketing_Assets_2022.zip",
+                "fileExtension": ".zip",
+                "sizeMB": 3800,
+                "lastAccessedDaysAgo": 410,
+                "lastAccessedDate": "2025-08-01",
+                "owner": f"mark.legacy@{domain}",
+                "department": "Marketing",
+                "riskStatus": "Unused Storage Reclaim"
+            }
+        ]
+
+        filtered_files = [f for f in all_files if f["lastAccessedDaysAgo"] >= window_days]
+
+        total_size_mb = sum(f["sizeMB"] for f in filtered_files)
+        file_types_summary = {}
+        for f in filtered_files:
+            ext = f["fileExtension"]
+            file_types_summary[ext] = file_types_summary.get(ext, 0) + 1
+
+        return {
+            "window_days": window_days,
+            "total_inactive_files": len(filtered_files),
+            "total_inactive_storage_mb": total_size_mb,
+            "total_inactive_storage_gb": round(total_size_mb / 1024.0, 2),
+            "file_types_breakdown": file_types_summary,
+            "files": filtered_files
+        }
+
+    def get_sharepoint_inactive_libraries(self, window_days: int = 90) -> Dict[str, Any]:
+        """Fetch SharePoint Library-Level Inactive Report filtered by inactivity threshold (90, 120, 180 days)."""
+        domain = self.get_primary_domain()
+        all_libraries = [
+            {
+                "siteName": "IT Operations",
+                "libraryName": "Legacy Server Backups 2023",
+                "url": f"https://{domain}.sharepoint.com/sites/itops/ServerBackups",
+                "totalFiles": 310,
+                "inactiveFilesCount": 285,
+                "totalSizeGB": 64.0,
+                "lastAccessedDaysAgo": 105,
+                "lastAccessedDate": "2026-06-02",
+                "storageReclaimPotentialGB": 58.5,
+                "annualCostSavingsUSD": 1404.0,
+                "sensitivityLevel": "NORMAL",
+                "primaryOwner": f"it.admin@{domain}"
+            },
+            {
+                "siteName": "Sales Operations",
+                "libraryName": "Historical Client Quotes 2021",
+                "url": f"https://{domain}.sharepoint.com/sites/salesops/ClientQuotes",
+                "totalFiles": 640,
+                "inactiveFilesCount": 510,
+                "totalSizeGB": 32.4,
+                "lastAccessedDaysAgo": 135,
+                "lastAccessedDate": "2026-05-03",
+                "storageReclaimPotentialGB": 28.1,
+                "annualCostSavingsUSD": 674.0,
+                "sensitivityLevel": "MEDIUM (PII Contained)",
+                "primaryOwner": f"sales.lead@{domain}"
+            },
+            {
+                "siteName": "Finance Confidential",
+                "libraryName": "Financial Statements 2024",
+                "url": f"https://{domain}.sharepoint.com/sites/finance/FinancialStatements",
+                "totalFiles": 435,
+                "inactiveFilesCount": 142,
+                "totalSizeGB": 14.5,
+                "lastAccessedDaysAgo": 180,
+                "lastAccessedDate": "2026-03-19",
+                "storageReclaimPotentialGB": 9.8,
+                "annualCostSavingsUSD": 235.0,
+                "sensitivityLevel": "HIGH (DLP Restricted)",
+                "primaryOwner": f"finance.admin@{domain}"
+            },
+            {
+                "siteName": "HR Internal",
+                "libraryName": "Former Employee Training Vault",
+                "url": f"https://{domain}.sharepoint.com/sites/hr/FormerEmpVault",
+                "totalFiles": 520,
+                "inactiveFilesCount": 480,
+                "totalSizeGB": 48.0,
+                "lastAccessedDaysAgo": 195,
+                "lastAccessedDate": "2026-03-04",
+                "storageReclaimPotentialGB": 44.0,
+                "annualCostSavingsUSD": 1056.0,
+                "sensitivityLevel": "MEDIUM (PII Contained)",
+                "primaryOwner": f"hr.director@{domain}"
+            },
+            {
+                "siteName": "Legal Holds Archive",
+                "libraryName": "Litigation Evidence Repository",
+                "url": f"https://{domain}.sharepoint.com/sites/legalarchive/LitigationDocs",
+                "totalFiles": 2100,
+                "inactiveFilesCount": 1890,
+                "totalSizeGB": 120.0,
+                "lastAccessedDaysAgo": 220,
+                "lastAccessedDate": "2026-02-07",
+                "storageReclaimPotentialGB": 98.0,
+                "annualCostSavingsUSD": 2350.0,
+                "sensitivityLevel": "HIGH (Legal Hold Protected)",
+                "primaryOwner": f"legal.counsel@{domain}"
+            },
+            {
+                "siteName": "Legacy Marketing 2023",
+                "libraryName": "Campaign Asset Vault 2022",
+                "url": f"https://{domain}.sharepoint.com/sites/mkt2023/CampaignVault",
+                "totalFiles": 1280,
+                "inactiveFilesCount": 1190,
+                "totalSizeGB": 89.0,
+                "lastAccessedDaysAgo": 410,
+                "lastAccessedDate": "2025-08-01",
+                "storageReclaimPotentialGB": 84.2,
+                "annualCostSavingsUSD": 2020.0,
+                "sensitivityLevel": "NORMAL",
+                "primaryOwner": f"mark.legacy@{domain}"
+            }
+        ]
+
+        filtered_libraries = [l for l in all_libraries if l["lastAccessedDaysAgo"] >= window_days]
+        total_reclaim_gb = sum(l["storageReclaimPotentialGB"] for l in filtered_libraries)
+        total_savings_usd = sum(l["annualCostSavingsUSD"] for l in filtered_libraries)
+
+        return {
+            "window_days": window_days,
+            "total_inactive_libraries": len(filtered_libraries),
+            "total_storage_reclaim_gb": round(total_reclaim_gb, 1),
+            "total_annual_cost_savings_usd": round(total_savings_usd, 2),
+            "libraries": filtered_libraries
         }
 
     def get_distribution_groups_management(self) -> List[Dict[str, Any]]:

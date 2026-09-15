@@ -77,8 +77,39 @@ def _auto_migrate_columns(target_engine=None):
         if "automation_policies" in inspector.get_table_names():
             pol_cols = [c["name"] for c in inspector.get_columns("automation_policies")]
             with eng.connect() as conn:
+                if "policy_type" not in pol_cols:
+                    conn.execute(text("ALTER TABLE automation_policies ADD COLUMN policy_type VARCHAR(100) DEFAULT 'CUSTOM'"))
                 if "criteria_json" not in pol_cols:
                     conn.execute(text("ALTER TABLE automation_policies ADD COLUMN criteria_json TEXT"))
+                if "alert_email_enabled" not in pol_cols:
+                    conn.execute(text("ALTER TABLE automation_policies ADD COLUMN alert_email_enabled BOOLEAN DEFAULT 1"))
+                if "alert_email_recipients" not in pol_cols:
+                    conn.execute(text("ALTER TABLE automation_policies ADD COLUMN alert_email_recipients TEXT"))
+                if "alert_teams_enabled" not in pol_cols:
+                    conn.execute(text("ALTER TABLE automation_policies ADD COLUMN alert_teams_enabled BOOLEAN DEFAULT 1"))
+                if "alert_teams_webhook" not in pol_cols:
+                    conn.execute(text("ALTER TABLE automation_policies ADD COLUMN alert_teams_webhook TEXT"))
+                if "daily_summary_email" not in pol_cols:
+                    conn.execute(text("ALTER TABLE automation_policies ADD COLUMN daily_summary_email BOOLEAN DEFAULT 1"))
+                if "daily_summary_teams" not in pol_cols:
+                    conn.execute(text("ALTER TABLE automation_policies ADD COLUMN daily_summary_teams BOOLEAN DEFAULT 1"))
+                if "action_config_json" not in pol_cols:
+                    conn.execute(text("ALTER TABLE automation_policies ADD COLUMN action_config_json TEXT"))
+                conn.commit()
+        if "legal_hold_cases" in inspector.get_table_names():
+            lh_cols = [c["name"] for c in inspector.get_columns("legal_hold_cases")]
+            with eng.connect() as conn:
+                if "keywords" not in lh_cols:
+                    conn.execute(text("ALTER TABLE legal_hold_cases ADD COLUMN keywords TEXT"))
+                if "time_interval_start" not in lh_cols:
+                    conn.execute(text("ALTER TABLE legal_hold_cases ADD COLUMN time_interval_start VARCHAR(50)"))
+                if "time_interval_end" not in lh_cols:
+                    conn.execute(text("ALTER TABLE legal_hold_cases ADD COLUMN time_interval_end VARCHAR(50)"))
+                if "destination_folder_url" not in lh_cols:
+                    conn.execute(text("ALTER TABLE legal_hold_cases ADD COLUMN destination_folder_url TEXT"))
+                if "compliance_search_status" not in lh_cols:
+                    conn.execute(text("ALTER TABLE legal_hold_cases ADD COLUMN compliance_search_status VARCHAR(100) DEFAULT 'Completed & Copied to Vault'"))
                 conn.commit()
     except Exception as e:
         logger.warning(f"Auto-migration check note: {e}")
+

@@ -6,33 +6,80 @@
     <title>Microsoft 365 admin center - Administration & AI Governance Platform</title>
     <link rel="stylesheet" href="/static/css/styles.css">
     <link href="https://fonts.googleapis.com/css2?family=Segoe+UI:wght@300;400;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 </head>
 <body class="m365-theme">
     <!-- Top Global Microsoft 365 Admin Center Bar -->
     <header class="m365-global-bar">
-        <div class="m365-bar-left">
-            <button class="m365-waffle-btn" title="App Launcher">
+        <div class="m365-bar-left" style="position: relative;">
+            <button class="m365-waffle-btn" id="m365-waffle-btn" title="App Launcher">
                 <svg width="18" height="18" viewBox="0 0 18 18" fill="currentColor"><path d="M2 2h3v3H2V2zm5 0h3v3H7V2zm5 0h3v3h-3V2zM2 7h3v3H2V7zm5 0h3v3H7V7zm5 0h3v3h-3V7zM2 12h3v3H2v-3zm5 0h3v3H7v-3zm5 0h3v3h-3v-3z"/></svg>
             </button>
-            <span class="m365-title">Microsoft 365 admin center</span>
+            <span class="m365-title" id="m365-title-btn" style="cursor: pointer;" title="Microsoft 365 Admin Center - Go to Home">Microsoft 365 admin center</span>
+
+            <!-- App Launcher (Waffle Menu) Flyout Dropdown -->
+            <div class="m365-waffle-menu" id="m365-waffle-menu" style="display: none;">
+                <div class="waffle-header">
+                    <span>Apps</span>
+                    <button class="waffle-all-apps" id="btn-waffle-all-apps">All apps ➔</button>
+                </div>
+                <div class="waffle-grid">
+                    <div class="waffle-app-item" data-module="ai-governance" title="AI Governance Dashboard">
+                        <span class="waffle-app-icon" style="background: linear-gradient(135deg, #6366f1, #8b5cf6);">🤖</span>
+                        <span class="waffle-app-name">AI Governance</span>
+                    </div>
+                    <div class="waffle-app-item" data-module="mailbox-reports" title="Outlook Mailbox Telemetry">
+                        <span class="waffle-app-icon" style="background: linear-gradient(135deg, #0284c7, #38bdf8);">📧</span>
+                        <span class="waffle-app-name">Outlook Admin</span>
+                    </div>
+                    <div class="waffle-app-item" data-module="teams-integration" title="Microsoft Teams Command Bot">
+                        <span class="waffle-app-icon" style="background: linear-gradient(135deg, #4f46e5, #6366f1);">💬</span>
+                        <span class="waffle-app-name">Teams Admin</span>
+                    </div>
+                    <div class="waffle-app-item" data-module="sp-onedrive-trend" title="SharePoint & Storage Trends">
+                        <span class="waffle-app-icon" style="background: linear-gradient(135deg, #059669, #10b981);">📊</span>
+                        <span class="waffle-app-name">SharePoint</span>
+                    </div>
+                    <div class="waffle-app-item" data-module="ai-governance-cost-onedrive" title="OneDrive Storage Optimization">
+                        <span class="waffle-app-icon" style="background: linear-gradient(135deg, #0d9488, #14b8a6);">📁</span>
+                        <span class="waffle-app-name">OneDrive</span>
+                    </div>
+                    <div class="waffle-app-item" data-module="security-risky-users" title="Defender Security & CVE Posture">
+                        <span class="waffle-app-icon" style="background: linear-gradient(135deg, #dc2626, #ef4444);">🛡️</span>
+                        <span class="waffle-app-name">Defender Security</span>
+                    </div>
+                    <div class="waffle-app-item" data-module="legal-hold" title="Purview Legal Hold Manager">
+                        <span class="waffle-app-icon" style="background: linear-gradient(135deg, #7c3aed, #a78bfa);">⚖️</span>
+                        <span class="waffle-app-name">Purview Compliance</span>
+                    </div>
+                    <div class="waffle-app-item" data-module="azure-ad-licenses" title="Entra ID License SKUs">
+                        <span class="waffle-app-icon" style="background: linear-gradient(135deg, #2563eb, #3b82f6);">🔑</span>
+                        <span class="waffle-app-name">Entra ID / Azure</span>
+                    </div>
+                    <div class="waffle-app-item" data-module="failed-updates" title="Intune & Workstation Update Telemetry">
+                        <span class="waffle-app-icon" style="background: linear-gradient(135deg, #d97706, #f59e0b);">💻</span>
+                        <span class="waffle-app-name">Intune Telemetry</span>
+                    </div>
+                </div>
+            </div>
         </div>
         <div class="m365-bar-center">
             <div class="m365-search-container">
                 <span class="search-icon">🔍</span>
-                <input type="text" placeholder="Search" class="m365-search-input" />
+                <input type="text" placeholder="Search users, groups, licenses, or recommendations..." class="m365-search-input" id="m365-top-search-input" />
             </div>
         </div>
         <div class="m365-bar-right">
-            <div class="m365-copilot-pill">
+            <div class="m365-copilot-pill" id="btn-top-copilot" style="cursor: pointer;" title="Open Copilot Assistant">
                 <span class="sparkle-icon">✨</span> Copilot
             </div>
-            <button class="m365-icon-btn" title="Layout View"><svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M2 2.5A1.5 1.5 0 0 1 3.5 1h9A1.5 1.5 0 0 1 14 2.5v11a1.5 1.5 0 0 1-1.5 1.5h-9A1.5 1.5 0 0 1 2 13.5v-11z"/></svg></button>
-            <button class="m365-icon-btn" title="Feedback"><svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1zm0 13V2a6 6 0 1 1 0 12z"/></svg></button>
-            <button class="m365-icon-btn" title="Notifications">🔔</button>
-            <span class="m365-org-badge">TECHFROST</span>
-            <button class="m365-icon-btn" title="Settings">⚙️</button>
-            <button class="m365-icon-btn" title="Help">?</button>
-            <div class="m365-user-avatar" title="Signed in as Administrator">SG</div>
+            <button class="m365-icon-btn" id="btn-top-layout" title="Toggle Layout View"><svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M2 2.5A1.5 1.5 0 0 1 3.5 1h9A1.5 1.5 0 0 1 14 2.5v11a1.5 1.5 0 0 1-1.5 1.5h-9A1.5 1.5 0 0 1 2 13.5v-11z"/></svg></button>
+            <button class="m365-icon-btn" id="btn-top-feedback" title="Give Feedback">💬</button>
+            <button class="m365-icon-btn" id="btn-top-notifications" title="Notifications">🔔</button>
+            <span class="m365-org-badge" id="m365-org-badge">HCL Test</span>
+            <button class="m365-icon-btn" id="btn-top-settings" title="Settings">⚙️</button>
+            <button class="m365-icon-btn" id="btn-top-help" title="Help">?</button>
+            <div class="m365-user-avatar" id="m365-user-avatar" title="Signed in as Administrator (SG)">SG</div>
         </div>
     </header>
 
@@ -126,6 +173,12 @@
                         <a href="#file-type-data" class="nav-item" data-module="file-type-data">
                             <span class="icon">📄</span> File Type Data & URLs
                         </a>
+                        <a href="#sp-inactive-files" class="nav-item" data-module="sp-inactive-files">
+                            <span class="icon">🗂️</span> SP File-Wise Inactive Report
+                        </a>
+                        <a href="#sp-inactive-libraries" class="nav-item" data-module="sp-inactive-libraries">
+                            <span class="icon">📚</span> SP Library-Level Inactive Report
+                        </a>
                     </div>
                 </div>
 
@@ -192,7 +245,55 @@
                     </div>
                     <div class="nav-subitems">
                         <a href="#ai-governance" class="nav-item active" data-module="ai-governance">
-                            <span class="icon">💡</span> AI Governance Feed
+                            <span class="icon">💡</span> All AI Recommendations
+                        </a>
+
+                        <!-- COST SAVING GOVERNANCE GROUP -->
+                        <div class="nav-group-label" style="font-size: 0.7rem; font-weight: 700; color: var(--accent-green, #10b981); text-transform: uppercase; padding: 6px 12px 2px 12px; letter-spacing: 0.5px;">💰 Cost Saving Governance</div>
+                        <a href="#ai-governance-cost-license" class="nav-item" data-module="ai-governance-cost-license" style="padding-left: 1.8rem;">
+                            <span class="icon">💳</span> License Cost Saving
+                        </a>
+                        <a href="#ai-governance-cost-sharepoint" class="nav-item" data-module="ai-governance-cost-sharepoint" style="padding-left: 1.8rem;">
+                            <span class="icon">📊</span> SharePoint Cost Saving
+                        </a>
+                        <a href="#ai-governance-cost-onedrive" class="nav-item" data-module="ai-governance-cost-onedrive" style="padding-left: 1.8rem;">
+                            <span class="icon">📁</span> OneDrive Cost Saving
+                        </a>
+                        <a href="#ai-governance-cost" class="nav-item" data-module="ai-governance-cost" style="padding-left: 1.8rem; opacity: 0.9;">
+                            <span class="icon">💰</span> All Cost Savings Overview
+                        </a>
+
+                        <!-- SECURITY GOVERNANCE GROUP -->
+                        <div class="nav-group-label" style="font-size: 0.7rem; font-weight: 700; color: var(--accent-blue, #3b82f6); text-transform: uppercase; padding: 8px 12px 2px 12px; letter-spacing: 0.5px;">🔒 Security Governance</div>
+                        <a href="#ai-governance-security" class="nav-item" data-module="ai-governance-security" style="padding-left: 1.8rem;">
+                            <span class="icon">🔒</span> Security Governance
+                        </a>
+
+                        <!-- COMPLIANCE GOVERNANCE GROUP -->
+                        <div class="nav-group-label" style="font-size: 0.7rem; font-weight: 700; color: #a78bfa; text-transform: uppercase; padding: 8px 12px 2px 12px; letter-spacing: 0.5px;">🛡️ Compliance Governance</div>
+                        <a href="#legal-hold" class="nav-item" data-module="legal-hold" style="padding-left: 1.8rem;">
+                            <span class="icon">⚖️</span> Legal Hold & Purview Cases
+                        </a>
+                        <a href="#ai-governance-compliance" class="nav-item" data-module="ai-governance-compliance" style="padding-left: 1.8rem;">
+                            <span class="icon">🛡️</span> Compliance Governance Overview
+                        </a>
+
+                    </div>
+                </div>
+
+                <!-- CATEGORY: PLATFORM & TOOLS -->
+                <div class="nav-category">
+                    <div class="nav-category-header">
+                        <span class="icon">⚙️</span>
+                        <span class="category-title">Platform & Tools</span>
+                        <span class="arrow-icon">❯</span>
+                    </div>
+                    <div class="nav-subitems">
+                        <a href="#request-creation" class="nav-item" data-module="request-creation">
+                            <span class="icon">📝</span> Create Request
+                        </a>
+                        <a href="#request-dashboard" class="nav-item" data-module="request-dashboard">
+                            <span class="icon">📊</span> Request Dashboard & Assignments
                         </a>
                         <a href="#policy-dashboard" class="nav-item" data-module="policy-dashboard">
                             <span class="icon">📜</span> Policy Dashboard & Conditions
@@ -202,9 +303,6 @@
                         </a>
                         <a href="#outages" class="nav-item" data-module="outages">
                             <span class="icon">🌐</span> M365 Service Outage Map
-                        </a>
-                        <a href="#legal-hold" class="nav-item" data-module="legal-hold">
-                            <span class="icon">⚖️</span> Legal Hold (Isolated)
                         </a>
                     </div>
                 </div>
@@ -218,21 +316,36 @@
 
         <!-- Main Content Area -->
         <main class="main-wrapper">
-            <!-- M365 Admin Action Ribbon (Image 1) -->
+            <!-- M365 Admin Action Ribbon -->
             <div class="m365-action-ribbon">
                 <div class="ribbon-left">
-                    <label class="m365-toggle-switch">
-                        <input type="checkbox" checked />
+                    <label class="m365-toggle-switch" title="Toggle Theme (Glassmorphic Dark Mode vs Classic Light Mode)">
+                        <input type="checkbox" id="m365-theme-toggle" checked />
                         <span class="toggle-slider"></span>
                     </label>
                     <span class="toggle-label">Try the new dashboard</span>
                 </div>
                 <div class="ribbon-actions">
-                    <div class="dropdown-pill">Dashboard view ▾</div>
-                    <button class="ribbon-btn">👤 Add user</button>
-                    <button class="ribbon-btn">🔑 Reset password</button>
-                    <button class="ribbon-btn">👥 Add team</button>
-                    <button class="ribbon-btn">💳 View your bill</button>
+                    <div class="dropdown-pill-wrapper" style="position: relative; display: inline-block;">
+                        <button class="ribbon-btn dropdown-pill" id="btn-dashboard-view-toggle">Dashboard view ▾</button>
+                        <div id="dashboard-view-dropdown" class="dropdown-menu-card" style="display: none; position: absolute; top: calc(100% + 4px); right: 0; z-index: 2500; min-width: 270px; background: var(--bg-card, #ffffff); border: 1px solid var(--border-color, #e1dfdd); border-radius: 6px; box-shadow: 0 8px 24px rgba(0,0,0,0.18); padding: 8px 0;">
+                            <div class="dropdown-header" style="padding: 6px 16px; font-weight: 700; font-size: 0.75rem; color: var(--text-muted, #605e5c); text-transform: uppercase; letter-spacing: 0.5px;">Switch Dashboard View</div>
+                            <a href="#" class="dropdown-item" data-module="ai-governance">🤖 AI Executive Governance</a>
+                            <a href="#" class="dropdown-item" data-module="legal-hold">⚖️ Legal Hold Case Manager & Compliance</a>
+                            <a href="#" class="dropdown-item" data-module="ai-governance-cost">💰 License & Cost Optimization</a>
+                            <a href="#" class="dropdown-item" data-module="security-risky-users">🔒 Identity & Security Risks</a>
+                            <a href="#" class="dropdown-item" data-module="mailflow-aggregation">📧 Mailflow & Exchange Rules</a>
+                            <a href="#" class="dropdown-item" data-module="sp-onedrive-trend">📁 SharePoint & OneDrive Storage</a>
+                            <a href="#" class="dropdown-item" data-module="azure-ad-inactive">👥 Inactive User Management</a>
+                            <a href="#" class="dropdown-item" data-module="distribution-groups-overview">👥 Distribution Groups & DLs</a>
+                            <div style="border-top: 1px solid var(--border-color, #e1dfdd); margin: 6px 0;"></div>
+                            <a href="#" class="dropdown-item" id="btn-reset-layout" style="color: var(--accent-blue, #0078d4); font-weight: 600;">🔄 Reset Layout to Standard</a>
+                        </div>
+                    </div>
+                    <button class="ribbon-btn" id="btn-ribbon-add-user">👤 Add user</button>
+                    <button class="ribbon-btn" id="btn-ribbon-reset-password">🔑 Reset password</button>
+                    <button class="ribbon-btn" id="btn-ribbon-add-team">👥 Add team</button>
+                    <button class="ribbon-btn" id="btn-ribbon-view-bill">💳 View your bill</button>
                     <button class="btn btn-primary" id="btn-export-data">📥 Export Data</button>
                 </div>
             </div>
@@ -243,7 +356,24 @@
                     <h1 id="page-title">AI Governance Dashboard</h1>
                     <p id="page-subtitle">Centralized intelligence, license cost optimization, and security insights.</p>
                 </div>
-                <div class="header-right">
+                <div class="header-right" style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
+                    <div class="sync-info-tab" id="sync-status-tab" title="SQL Database & Dashboard Telemetry Sync Status">
+                        <div class="sync-info-content">
+                            <div class="sync-row">
+                                <span class="sync-icon">🗄️</span>
+                                <span class="sync-label">SQL Last Updated:</span>
+                                <span class="sync-time" id="lbl-sql-last-updated">Syncing...</span>
+                            </div>
+                            <div class="sync-row">
+                                <span class="sync-icon">📊</span>
+                                <span class="sync-label">Dashboard Last Updated:</span>
+                                <span class="sync-time" id="lbl-dashboard-last-updated">Syncing...</span>
+                            </div>
+                        </div>
+                        <button class="btn-sync-now" id="btn-top-sync-now" title="Trigger live Graph API sync & refresh database timestamps">
+                            <span>🔄 Sync Now</span>
+                        </button>
+                    </div>
                     <div class="badge badge-env" id="env-badge">ENV: TEST (Cap: 50)</div>
                     <div class="badge badge-db" id="db-badge">SQL Express: Connected</div>
                 </div>
@@ -521,6 +651,545 @@
                         <button type="submit" class="btn btn-accent" style="flex: 1;">Save Settings</button>
                         <button type="button" class="btn btn-secondary" id="btn-trigger-teams-digest">🚀 Trigger Digest Now</button>
                     </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Action Modal: Add User -->
+    <div class="modal-overlay" id="modal-add-user" style="display: none;">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3>👤 Add New M365 Tenant User</h3>
+                <button class="modal-close" id="btn-close-modal-add-user">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p style="font-size: 0.85rem; color: var(--text-secondary);">Provision user mailbox and assign licensing via Microsoft Graph REST API.</p>
+                <form id="form-add-user">
+                    <div class="form-group">
+                        <label>User Principal Name (Email)</label>
+                        <input type="email" id="add-user-upn" class="form-control" placeholder="newuser@contoso.com" required />
+                    </div>
+                    <div class="form-group">
+                        <label>Display Name</label>
+                        <input type="text" id="add-user-name" class="form-control" placeholder="Jane Doe" required />
+                    </div>
+                    <div class="form-group">
+                        <label>Department</label>
+                        <select id="add-user-dept" class="form-control">
+                            <option value="Finance">Finance</option>
+                            <option value="IT Operations">IT Operations</option>
+                            <option value="Sales">Sales & Marketing</option>
+                            <option value="Legal">Legal & Compliance</option>
+                            <option value="Executive">Executive Leadership</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Assign M365 Subscription SKU</label>
+                        <select id="add-user-sku" class="form-control">
+                            <option value="M365_E5">Microsoft 365 E5 (Security & Copilot Ready)</option>
+                            <option value="M365_E3">Microsoft 365 E3</option>
+                            <option value="M365_F3">Microsoft 365 F3 (Frontline)</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-block">🚀 Create & Provision User</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Action Modal: Reset Password -->
+    <div class="modal-overlay" id="modal-reset-password" style="display: none;">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3>🔑 Reset User Credentials & Revoke Sessions</h3>
+                <button class="modal-close" id="btn-close-modal-reset-password">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p style="font-size: 0.85rem; color: var(--text-secondary);">Trigger instant password reset and revoke active OAuth tokens in Entra ID.</p>
+                <form id="form-reset-password">
+                    <div class="form-group">
+                        <label>Target User Principal Name</label>
+                        <input type="email" id="reset-user-upn" class="form-control" placeholder="user@contoso.com" required />
+                    </div>
+                    <div class="form-group" style="display: flex; align-items: center; gap: 8px;">
+                        <input type="checkbox" id="reset-revoke-sessions" checked style="width: auto;" />
+                        <label for="reset-revoke-sessions" style="margin: 0;">Revoke all active refresh tokens & sign-in sessions</label>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-block">⚡ Execute Instant Password Reset</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Action Modal: Add Team / Group -->
+    <div class="modal-overlay" id="modal-add-team" style="display: none;">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3>👥 Create Distribution Group / Team</h3>
+                <button class="modal-close" id="btn-close-modal-add-team">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p style="font-size: 0.85rem; color: var(--text-secondary);">Create standardized DL group with department mapping and RBAC conventions.</p>
+                <form id="form-add-team">
+                    <div class="form-group">
+                        <label>Group / Team Name</label>
+                        <input type="text" id="add-team-name" class="form-control" placeholder="Project Apollo Team" required />
+                    </div>
+                    <div class="form-group">
+                        <label>Department Code</label>
+                        <select id="add-team-dept" class="form-control">
+                            <option value="FIN">FIN (Finance)</option>
+                            <option value="IT">IT (Information Technology)</option>
+                            <option value="SALES">SALES (Sales & Marketing)</option>
+                            <option value="LEGAL">LEGAL (Legal & Audit)</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-block">👥 Create Group with Naming Convention</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Action Modal: View Bill -->
+    <div class="modal-overlay" id="modal-view-bill" style="display: none;">
+        <div class="modal-card modal-card-wide">
+            <div class="modal-header">
+                <h3>💳 Subscriptions, Billing & License SKU Optimization</h3>
+                <button class="modal-close" id="btn-close-modal-view-bill">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="grid-cards" style="grid-template-columns: repeat(3, 1fr); margin-bottom: 1rem;">
+                    <div class="card" style="border-left: 4px solid var(--accent-blue);">
+                        <div class="card-title">Paid Subscriptions</div>
+                        <h3 style="font-size: 1.6rem; margin: 4px 0;">$14,250<span style="font-size: 0.8rem; color: var(--text-muted);">/mo</span></h3>
+                        <p style="font-size: 0.8rem; color: var(--text-secondary);">47 Assigned E5/E3 Seats</p>
+                    </div>
+                    <div class="card" style="border-left: 4px solid var(--accent-green);">
+                        <div class="card-title">AI Projected Savings</div>
+                        <h3 style="font-size: 1.6rem; margin: 4px 0; color: var(--accent-green);">+$11,000<span style="font-size: 0.8rem; color: var(--text-secondary);">/yr</span></h3>
+                        <p style="font-size: 0.8rem; color: var(--text-secondary);">License, SPO & ODB Reclaim</p>
+                    </div>
+                    <div class="card" style="border-left: 4px solid var(--accent-amber);">
+                        <div class="card-title">Trial / Add-On SKUs</div>
+                        <h3 style="font-size: 1.6rem; margin: 4px 0;">15 Seats</h3>
+                        <p style="font-size: 0.8rem; color: var(--text-secondary);">Copilot & Defender Add-Ons</p>
+                    </div>
+                </div>
+                <button class="btn btn-primary btn-block" onclick="document.getElementById('modal-view-bill').style.display='none'; loadModule('ai-governance-cost');">💰 Open Cost Savings Optimization Feed</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Top Right Bar Modal: Copilot Assistant -->
+    <div class="modal-overlay" id="modal-copilot-assistant" style="display: none;">
+        <div class="modal-card modal-card-wide" style="max-width: 800px; width: 90%;">
+            <div class="modal-header" style="background: linear-gradient(135deg, #1e1b4b, #312e81); color: white;">
+                <h3>✨ Microsoft 365 Copilot Assistant & AI Synthesis</h3>
+                <button class="modal-close" style="color: white;" onclick="window.closeModal('modal-copilot-assistant')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div style="background: #f8fafc; padding: 12px; border-radius: 6px; border: 1px solid #e2e8f0; margin-bottom: 12px; font-size: 0.88rem; color: #1e293b;">
+                    <strong>✨ Live Tenant Context:</strong> Full PROD Sync active across 1,250 objects.
+                    <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px;">
+                        <button class="btn btn-secondary btn-sm copilot-prompt-btn" data-prompt="Synthesize top 3 cost saving recommendations for inactive licenses and SharePoint.">💰 Cost Savings</button>
+                        <button class="btn btn-secondary btn-sm copilot-prompt-btn" data-prompt="List high risk users in Azure AD and Defender security exposure summary.">🛡️ Security Audit</button>
+                        <button class="btn btn-secondary btn-sm copilot-prompt-btn" data-prompt="Check external sharing links containing sensitive credit card or SSN data.">🔒 Sensitivity Audit</button>
+                        <button class="btn btn-secondary btn-sm copilot-prompt-btn" data-prompt="Summarize failed updates across Windows 11 and Defender devices.">💻 Device Updates</button>
+                    </div>
+                </div>
+
+                <div id="copilot-chat-history" style="height: 260px; overflow-y: auto; background: #0f172a; color: #f8fafc; padding: 12px; border-radius: 6px; font-size: 0.85rem; font-family: consolas, monospace; margin-bottom: 12px; border: 1px solid #1e293b;">
+                    <div style="color: #6366f1;">🤖 Copilot: Hello Admin! I am your AI assistant for M365 Administration & Governance. Click any prompt above or type your question below.</div>
+                </div>
+
+                <div style="display: flex; gap: 8px;">
+                    <input type="text" id="copilot-input" class="form-control" placeholder="Ask Copilot anything about licenses, security, SharePoint, or mailflow..." style="flex: 1;" />
+                    <button class="btn btn-primary" id="btn-copilot-send">✨ Ask Copilot</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Top Right Bar Modal: Feedback -->
+    <div class="modal-overlay" id="modal-feedback" style="display: none;">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3>💬 Send Platform Feedback</h3>
+                <button class="modal-close" onclick="window.closeModal('modal-feedback')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p style="font-size: 0.85rem; color: var(--text-secondary);">Your feedback helps engineering optimize M365 Admin & Governance features.</p>
+                <form id="form-submit-feedback">
+                    <div class="form-group">
+                        <label>Rating</label>
+                        <select id="feedback-rating" class="form-control">
+                            <option value="5">⭐⭐⭐⭐⭐ 5 - Excellent</option>
+                            <option value="4">⭐⭐⭐⭐ 4 - Very Good</option>
+                            <option value="3">⭐⭐⭐ 3 - Average</option>
+                            <option value="2">⭐⭐ 2 - Needs Improvement</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Feedback Category</label>
+                        <select id="feedback-category" class="form-control">
+                            <option value="Policy Automation">Policy Automation</option>
+                            <option value="SharePoint Cleanup">SharePoint Cleanup</option>
+                            <option value="Security & Compliance">Security & Compliance</option>
+                            <option value="AI Recommendations">AI Recommendations</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Comments & Suggestions</label>
+                        <textarea id="feedback-comments" class="form-control" rows="3" placeholder="Share your experience or requested features..." required></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-block">💬 Submit Feedback</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Top Right Bar Modal: Notifications Flyout -->
+    <div class="modal-overlay" id="modal-notifications" style="display: none;">
+        <div class="modal-card modal-card-wide" style="max-width: 650px;">
+            <div class="modal-header">
+                <h3>🔔 Notifications & Alert Feed (Live PROD)</h3>
+                <button class="modal-close" onclick="window.closeModal('modal-notifications')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div style="display: flex; flex-direction: column; gap: 10px;">
+                    <div style="background: #fee2e2; border-left: 4px solid #dc2626; padding: 10px; border-radius: 4px;">
+                        <strong style="color: #991b1b;">🚨 Defender Alert (High Risk)</strong>
+                        <p style="margin: 2px 0 0 0; font-size: 0.85rem; color: #7f1d1d;">Impossible Travel Sign-in detected for <code>alex.wilson@contoso.com</code> (Lagos, Nigeria).</p>
+                    </div>
+                    <div style="background: #fef3c7; border-left: 4px solid #f59e0b; padding: 10px; border-radius: 4px;">
+                        <strong style="color: #92400e;">⚠️ SharePoint Sensitive File Shared Externally</strong>
+                        <p style="margin: 2px 0 0 0; font-size: 0.85rem; color: #78350f;">Anonymous link created for <code>Q3_Financial_Tax_Ledger.xlsx</code> in Finance & Legal Vault.</p>
+                    </div>
+                    <div style="background: #e0f2fe; border-left: 4px solid #0284c7; padding: 10px; border-radius: 4px;">
+                        <strong style="color: #075985;">📧 Auto-Forwarding Rule Alert</strong>
+                        <p style="margin: 2px 0 0 0; font-size: 0.85rem; color: #0c4a6e;">Rule 'Auto-Forward to Personal Gmail' detected forwarding corporate cards.</p>
+                    </div>
+                </div>
+                <button class="btn btn-secondary btn-block" style="margin-top: 15px;" onclick="window.closeModal('modal-notifications'); loadModule('policy-dashboard');">📜 Open Policy Dashboard</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Top Right Bar Modal: Tenant Org Profile -->
+    <div class="modal-overlay" id="modal-org-profile" style="display: none;">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3>🏢 Tenant Organization Profile</h3>
+                <button class="modal-close" onclick="window.closeModal('modal-org-profile')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <table style="width: 100%; border-collapse: collapse; font-size: 0.88rem;">
+                    <tr><td style="padding: 6px; font-weight: bold;">Organization Name:</td><td style="padding: 6px;">HCL Test Tenant</td></tr>
+                    <tr><td style="padding: 6px; font-weight: bold;">Tenant ID:</td><td style="padding: 6px;"><code>65f60153-6f38-4872-a7cd-ffc212ee595c</code></td></tr>
+                    <tr><td style="padding: 6px; font-weight: bold;">Primary Domain:</td><td style="padding: 6px;"><code>contoso.com</code></td></tr>
+                    <tr><td style="padding: 6px; font-weight: bold;">Environment Mode:</td><td style="padding: 6px;"><span class="badge" style="background:#dcfce7; color:#15803d; font-weight:bold;">ENV: PROD (Full Live Sync)</span></td></tr>
+                    <tr><td style="padding: 6px; font-weight: bold;">Total Seats:</td><td style="padding: 6px;">1,250 Active Subscriptions</td></tr>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Top Right Bar Modal: Help & Documentation -->
+    <div class="modal-overlay" id="modal-help-docs" style="display: none;">
+        <div class="modal-card modal-card-wide" style="max-width: 750px;">
+            <div class="modal-header">
+                <h3>❓ Help, Sitemap & Slash Commands</h3>
+                <button class="modal-close" onclick="window.closeModal('modal-help-docs')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <h4 style="margin: 0 0 8px 0; color: var(--accent-blue);">Available Slash Commands</h4>
+                <ul style="font-size: 0.88rem; line-height: 1.6; color: var(--text-secondary);">
+                    <li><code>/goal</code> — Recommend for long-running autonomous remediation goals.</li>
+                    <li><code>/schedule</code> — Set recurring cron schedules or instant alerts.</li>
+                    <li><code>/grill-me</code> — Launch interactive interview for design alignment.</li>
+                    <li><code>/learn</code> — Persist new admin preferences for future sessions.</li>
+                </ul>
+
+                <h4 style="margin: 15px 0 8px 0; color: var(--accent-blue);">Keyboard & Top Bar Shortcuts</h4>
+                <div style="font-size: 0.85rem; color: var(--text-secondary);">
+                    • Click <strong>Waffle Menu (Apps)</strong> at top left to switch modules.<br/>
+                    • Click <strong>Copilot ✨</strong> button at top right to synthesize AI insights.<br/>
+                    • Press <strong>Esc</strong> anytime to close active overlays.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Top Right Bar Modal: User Account Profile -->
+    <div class="modal-overlay" id="modal-user-profile" style="display: none;">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3>👤 Administrator Account Profile</h3>
+                <button class="modal-close" onclick="window.closeModal('modal-user-profile')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div style="text-align: center; margin-bottom: 15px;">
+                    <div style="width: 50px; height: 50px; border-radius: 50%; background: #2563eb; color: white; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; font-weight: bold; margin: 0 auto 8px auto;">SG</div>
+                    <h4 style="margin: 0;">Global Administrator (SG)</h4>
+                    <span style="font-size: 0.85rem; color: var(--text-muted);">admin@contoso.com</span>
+                </div>
+                <div style="background: #f8fafc; padding: 10px; border-radius: 6px; font-size: 0.82rem; margin-bottom: 15px;">
+                    <strong>Assigned Entra ID Roles:</strong><br/>
+                    • Global Administrator<br/>
+                    • Security Administrator<br/>
+                    • Exchange Administrator
+                </div>
+                <button class="btn btn-secondary btn-block" onclick="alert('Session active. OAuth2 token valid for tenant contoso.com.');">🔑 Check OAuth Token Status</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Policy Creation & Configuration Studio Modal -->
+    <div class="modal-overlay" id="modal-create-policy" style="display: none;">
+        <div class="modal-card modal-card-wide" style="max-width: 850px; width: 92%;">
+            <div class="modal-header">
+                <h3>📜 Create & Configure Governance Policy</h3>
+                <button class="modal-close" id="btn-close-modal-create-policy">&times;</button>
+            </div>
+            <div class="modal-body" style="max-height: 80vh; overflow-y: auto;">
+                <form id="form-create-policy">
+                    <!-- Policy Category & Type Selection -->
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 12px;">
+                        <div class="form-group">
+                            <label style="font-weight: 600;">Policy Category</label>
+                            <select id="pol-create-category" class="form-control" required>
+                                <option value="LICENSE_AUTOMATION">💳 License Automation</option>
+                                <option value="SHAREPOINT_CLEANUP">📁 SharePoint Cleanup & Move</option>
+                                <option value="COMPLIANCE_SECURITY">🛡️ Compliance & Security</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label style="font-weight: 600;">Policy Type</label>
+                            <select id="pol-create-type" class="form-control" required>
+                                <option value="LICENSE_REMOVAL">License Removal (Inactive Users + Azure AD)</option>
+                                <option value="LICENSE_DOWNGRADE">License Downgrade / Upgrade Rule</option>
+                                <option value="LICENSE_ASSIGNMENT">Role-Based License Auto-Assignment</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 15px; margin-bottom: 12px;">
+                        <div class="form-group">
+                            <label style="font-weight: 600;">Policy Name</label>
+                            <input type="text" id="pol-create-name" class="form-control" placeholder="e.g. Inactive E5 License Downgrade Policy" required />
+                        </div>
+                        <div class="form-group">
+                            <label style="font-weight: 600;">Governance Phase Level</label>
+                            <select id="pol-create-phase" class="form-control">
+                                <option value="PHASE_1_REPORTING">Phase 1: Reporting Only</option>
+                                <option value="PHASE_2_SEMI_AUTOMATED" selected>Phase 2: Semi-Automated (Approval)</option>
+                                <option value="PHASE_3_FULLY_AUTOMATED">Phase 3: Fully Automated</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: 15px;">
+                        <label style="font-weight: 600;">Description</label>
+                        <input type="text" id="pol-create-desc" class="form-control" placeholder="Brief rationale and enforcement scope for this policy..." />
+                    </div>
+
+                    <!-- Dynamic Criteria & Attributes Box -->
+                    <div style="background: #F8F9FA; padding: 1rem; border-radius: 6px; border: 1px solid #EDEBE9; margin-bottom: 15px;">
+                        <h4 style="margin: 0 0 10px 0; color: #0078D4; font-size: 0.95rem;">⚙️ Filtering Attributes & Rule Criteria</h4>
+
+                        <!-- Azure AD Attribute Filters -->
+                        <div id="section-azure-ad-attrs" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 10px;">
+                            <div>
+                                <label style="font-size: 0.78rem; font-weight: 600;">Department</label>
+                                <input type="text" id="pol-crit-dept" class="form-control" value="All" />
+                            </div>
+                            <div>
+                                <label style="font-size: 0.78rem; font-weight: 600;">Location</label>
+                                <input type="text" id="pol-crit-location" class="form-control" value="All" />
+                            </div>
+                            <div>
+                                <label style="font-size: 0.78rem; font-weight: 600;">Grade / Band</label>
+                                <input type="text" id="pol-crit-grade" class="form-control" value="All" />
+                            </div>
+                            <div>
+                                <label style="font-size: 0.78rem; font-weight: 600;">RBI User Type</label>
+                                <select id="pol-crit-rbi-usertype" class="form-control">
+                                    <option value="StandardEmployee">Standard Employee</option>
+                                    <option value="VendorContractor">Vendor / Contractor</option>
+                                    <option value="ExecutiveLeader">Executive Leadership</option>
+                                    <option value="SharedMailboxUser">Shared Service Account</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label style="font-size: 0.78rem; font-weight: 600;">Inactivity Threshold (Days)</label>
+                                <input type="number" id="pol-crit-inactive-days" class="form-control" value="90" />
+                            </div>
+                            <div id="div-pol-crit-target-sku">
+                                <label style="font-size: 0.78rem; font-weight: 600;">Target License SKU</label>
+                                <select id="pol-crit-target-sku" class="form-control">
+                                    <option value="ENTERPRISEPACK (M365 E3)">M365 E3 (Standard)</option>
+                                    <option value="ENTERPRISEPREMIATION (M365 E5)">M365 E5 (Premium Security)</option>
+                                    <option value="M365_F3">M365 F3 (Frontline)</option>
+                                    <option value="RECLAIM_ONLY">None (Reclaim License)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- SharePoint Cleanup Criteria & Destinations -->
+                        <div id="section-sp-cleanup-attrs" style="display: none; grid-template-columns: repeat(3, 1fr); gap: 10px;">
+                            <div>
+                                <label style="font-size: 0.78rem; font-weight: 600;">Source SharePoint Site</label>
+                                <select id="pol-sp-source-site" class="form-control"></select>
+                            </div>
+                            <div>
+                                <label style="font-size: 0.78rem; font-weight: 600;">File Type Extension Filter</label>
+                                <input type="text" id="pol-sp-file-types" class="form-control" value=".xlsx,.pdf,.docx,.zip" />
+                            </div>
+                            <div>
+                                <label style="font-size: 0.78rem; font-weight: 600;">Cleanup Action Choice</label>
+                                <select id="pol-sp-action-choice" class="form-control">
+                                    <option value="DELETE">Delete Files Permanently</option>
+                                    <option value="MOVE_SHAREPOINT">Move to Different SharePoint Site</option>
+                                    <option value="MOVE_ONEDRIVE">Move to OneDrive Account</option>
+                                    <option value="MOVE_AZURE_STORAGE" selected>Move to Azure Blob Storage</option>
+                                </select>
+                            </div>
+                            <div id="div-sp-destination" style="grid-column: 1 / -1;">
+                                <label style="font-size: 0.78rem; font-weight: 600;">Destination Target Selection</label>
+                                <select id="pol-sp-destination-target" class="form-control"></select>
+                            </div>
+                        </div>
+
+                        <!-- Compliance & Security Criteria -->
+                        <div id="section-compliance-attrs" style="display: none; gap: 10px;">
+                            <label style="font-size: 0.78rem; font-weight: 600;">Sensitive Data Definitions Included</label>
+                            <input type="text" id="pol-compliance-sensitive-list" class="form-control" value="Credit Card Number (CCN), Social Security Number (SSN), Financial & Tax Statements, Source Code & Credentials" />
+                        </div>
+                    </div>
+
+                    <!-- Alerting & Daily Digest Configuration Section -->
+                    <div style="background: #EFF6FC; padding: 1rem; border-radius: 6px; border: 1px solid #0078D4; margin-bottom: 15px;">
+                        <h4 style="margin: 0 0 10px 0; color: #0078D4; font-size: 0.95rem;">🚨 Instant Alerting & Daily Digest Settings</h4>
+                        
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 10px;">
+                            <div style="background: #FFFFFF; padding: 10px; border-radius: 4px; border: 1px solid #C7E0F4;">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                                    <strong style="font-size: 0.85rem;">📧 Email Finding Alerts</strong>
+                                    <input type="checkbox" id="pol-alert-email-toggle" checked style="width:auto;" />
+                                </div>
+                                <input type="text" id="pol-alert-email-recipients" class="form-control" value="admin@contoso.com, secops@contoso.com" placeholder="Comma separated recipient emails" style="font-size: 0.8rem; height: 30px;" />
+                            </div>
+
+                            <div style="background: #FFFFFF; padding: 10px; border-radius: 4px; border: 1px solid #C7E0F4;">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                                    <strong style="font-size: 0.85rem;">💬 Teams Chat Finding Alerts</strong>
+                                    <input type="checkbox" id="pol-alert-teams-toggle" checked style="width:auto;" />
+                                </div>
+                                <input type="url" id="pol-alert-teams-webhook" class="form-control" value="https://outlook.office.com/webhook/sample" placeholder="Incoming Webhook URL" style="font-size: 0.8rem; height: 30px;" />
+                            </div>
+                        </div>
+
+                        <div style="display: flex; gap: 20px; font-size: 0.85rem; color: #004578;">
+                            <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
+                                <input type="checkbox" id="pol-daily-summary-email" checked style="width:auto;" />
+                                Include findings in Daily Email Summary Digest
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
+                                <input type="checkbox" id="pol-daily-summary-teams" checked style="width:auto;" />
+                                Include findings in Daily Teams Digest Card
+                            </label>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary btn-block" style="padding: 10px; font-size: 0.95rem;">📜 Create Policy & Enable Monitoring</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create Policy Rule Modal -->
+    <div class="modal-overlay" id="modal-create-rule" style="display: none;">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3>⚡ Add Policy Condition Rule</h3>
+                <button class="modal-close" onclick="window.closeModal('modal-create-rule')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="form-create-rule">
+                    <div class="form-group">
+                        <label style="font-weight: 600;">Rule Name</label>
+                        <input type="text" id="rule-name-input" class="form-control" placeholder="e.g. Inbound Spam Threshold Rule" required />
+                    </div>
+                    <div class="form-group">
+                        <label style="font-weight: 600;">Condition Trigger</label>
+                        <select id="rule-trigger-select" class="form-control">
+                            <option value="SPAM_SCORE_HIGH">Spam Confidence Level (SCL) >= 7</option>
+                            <option value="EXTERNAL_AUTOFORWARD">External Auto-Forwarding Detected</option>
+                            <option value="INACTIVE_LICENSE">User Inactive > 90 Days</option>
+                            <option value="SENSITIVE_FILE_SHARING">Sensitive File (CCN/SSN) Shared Externally</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label style="font-weight: 600;">Action Choice</label>
+                        <select id="rule-action-select" class="form-control">
+                            <option value="QUARANTINE">Quarantine Message / Item</option>
+                            <option value="ALERT_ADMIN">Trigger Email & Teams Alert</option>
+                            <option value="RECLAIM_LICENSE">Reclaim / Downgrade License</option>
+                            <option value="MOVE_AZURE">Archive to Azure Storage</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-block">⚡ Add Condition Rule</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Purview Compliance Search & Data Copy Modal -->
+    <div class="modal-overlay" id="modal-compliance-search" style="display: none;">
+        <div class="modal-card modal-card-wide" style="max-width: 800px;">
+            <div class="modal-header">
+                <h3>🔍 Run Compliance Search & Copy Data to Vault</h3>
+                <button class="modal-close" onclick="window.closeModal('modal-compliance-search')">&times;</button>
+            </div>
+            <div class="modal-body" style="max-height: 80vh; overflow-y: auto;">
+                <form id="form-compliance-search">
+                    <div class="form-group">
+                        <label style="font-weight: 600;">Case Reference / Investigation Name</label>
+                        <input type="text" id="comp-case-name" class="form-control" placeholder="e.g. Q3 Financial Audit Investigation" required />
+                    </div>
+
+                    <div class="form-group">
+                        <label style="font-weight: 600;">Target User / Custodian (Enabled & Disabled Users)</label>
+                        <select id="comp-target-user-select" class="form-control" required>
+                            <!-- Dynamically populated with active and deprovisioned users -->
+                        </select>
+                        <span style="font-size: 0.75rem; color: var(--text-secondary);">Includes both Active (Enabled) and Deprovisioned (Disabled) user accounts.</span>
+                    </div>
+
+                    <div class="form-group">
+                        <label style="font-weight: 600;">Search Keywords (Comma Separated)</label>
+                        <input type="text" id="comp-keywords" class="form-control" value="Financial, Secret, Confidential, Tax, Merger, Patent" required />
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;" class="form-group">
+                        <div>
+                            <label style="font-weight: 600;">Start Date</label>
+                            <input type="date" id="comp-start-date" class="form-control" value="2025-01-01" required />
+                        </div>
+                        <div>
+                            <label style="font-weight: 600;">End Date</label>
+                            <input type="date" id="comp-end-date" class="form-control" value="2026-12-31" required />
+                        </div>
+                    </div>
+
+                    <div class="form-group" style="background: #EFF6FC; padding: 12px; border-radius: 6px; border: 1px solid #0078D4;">
+                        <label style="font-weight: 600; color: #004578;">📁 Default Pre-Filled Destination Folder URL</label>
+                        <input type="url" id="comp-destination-url" class="form-control" value="https://contoso-my.sharepoint.com/personal/archive_vault_contoso_com/Documents/LegalHold_Compliance_Exports/" required style="font-size: 0.85rem;" />
+                        <span style="font-size: 0.75rem; color: #004578;">Matched items (emails, OneDrive docs, SharePoint files) will be copied to this destination OneDrive or SharePoint URL automatically.</span>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary btn-block" style="padding: 10px; font-size: 0.95rem;">🔍 Run Compliance Search & Copy Data to Vault</button>
                 </form>
             </div>
         </div>

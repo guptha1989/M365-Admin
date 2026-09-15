@@ -9,12 +9,12 @@ class DataExportService:
     Export generator for reporting data strictly filtered to 15 days, 30 days, or 365 days.
     """
 
-    ALLOWED_WINDOWS = [15, 30, 365]
+    ALLOWED_WINDOWS = [15, 30, 60, 90, 120, 180, 365]
 
     def validate_window(self, days: int) -> int:
         if days not in self.ALLOWED_WINDOWS:
             # Fallback to nearest allowed window
-            return 30
+            return 90
         return days
 
     def generate_csv(self, module_name: str, days: int, data: List[Dict[str, Any]]) -> str:

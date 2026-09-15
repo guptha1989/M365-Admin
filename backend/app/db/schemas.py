@@ -9,6 +9,8 @@ class SystemStatusSchema(BaseModel):
     max_sync_objects: Optional[int]
     db_connected: bool
     version: str
+    sql_last_updated: Optional[str] = None
+    dashboard_last_updated: Optional[str] = None
 
 # AI Settings Schema
 class AIKeySaveSchema(BaseModel):
@@ -56,11 +58,19 @@ class ActionApprovalSchema(BaseModel):
 class AutomationPolicySchema(BaseModel):
     id: int
     category: str
+    policy_type: str = "CUSTOM"
     policy_name: str
     phase_level: str
     is_enabled: bool
     description: Optional[str] = None
     criteria_json: Optional[str] = None
+    alert_email_enabled: bool = True
+    alert_email_recipients: Optional[str] = None
+    alert_teams_enabled: bool = True
+    alert_teams_webhook: Optional[str] = None
+    daily_summary_email: bool = True
+    daily_summary_teams: bool = True
+    action_config_json: Optional[str] = None
     created_at: datetime.datetime
 
     class Config:
@@ -68,11 +78,19 @@ class AutomationPolicySchema(BaseModel):
 
 class AutomationPolicyCreateSchema(BaseModel):
     category: str
+    policy_type: str = "CUSTOM"
     policy_name: str
     phase_level: str = "PHASE_1_REPORTING"
     is_enabled: bool = True
     description: Optional[str] = None
     criteria_json: Optional[str] = None
+    alert_email_enabled: bool = True
+    alert_email_recipients: Optional[str] = "admin@contoso.com"
+    alert_teams_enabled: bool = True
+    alert_teams_webhook: Optional[str] = None
+    daily_summary_email: bool = True
+    daily_summary_teams: bool = True
+    action_config_json: Optional[str] = None
 
 class TeamsConfigSaveSchema(BaseModel):
     webhook_url: Optional[str] = None

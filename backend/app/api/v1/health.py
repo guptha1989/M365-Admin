@@ -14,10 +14,24 @@ router = APIRouter()
 
 @router.get("/health", response_model=SystemStatusSchema, summary="System Health & Environment Status")
 def get_health_status(db: Session = Depends(get_db)):
-    """Check API Gateway health, environment mode (TEST vs PROD), and DB connectivity."""
+    """Check API Gateway health, environment mode (TEST vs PROD), DB connectivity, and Last Sync timestamps."""
     db_ok = True
+    sql_last = None
+    dash_last = None
     try:
         db.execute(text("SELECT 1"))
+        last_audit = db.query(AuditLog).order_by(AuditLog.timestamp.desc()).first()
+        last_rec = db.query(AIRecommendation).order_by(AIRecommendation.created_at.desc()).first()
+        
+        if last_audit and last_audit.timestamp:
+            sql_last = last_audit.timestamp.strftime("%Y-%m-%d %H:%M:%S UTC")
+        else:
+            sql_last = datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
+            
+        if last_rec and last_rec.created_at:
+            dash_last = last_rec.created_at.strftime("%Y-%m-%d %H:%M:%S UTC")
+        else:
+            dash_last = datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
     except Exception:
         db_ok = False
 
@@ -26,7 +40,9 @@ def get_health_status(db: Session = Depends(get_db)):
         "environment": settings.ENV,
         "max_sync_objects": settings.max_sync_objects,
         "db_connected": db_ok,
-        "version": settings.VERSION
+        "version": settings.VERSION,
+        "sql_last_updated": sql_last,
+        "dashboard_last_updated": dash_last
     }
 
 @router.post("/health/sync", summary="Pull Latest API Data & Sync SQL Database & Dashboard")

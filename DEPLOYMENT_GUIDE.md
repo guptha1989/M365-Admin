@@ -198,9 +198,21 @@ To move this application to another Windows machine or Server:
 
 ## 💡 8. Key Features Overview
 
-1. **AI Governance & LLM Orchestrator**: Click **⚙️ AI API Keys Config** in the sidebar to securely enter your OpenAI, Anthropic, or Local LLM keys (encrypted in SQL Express). View cost-saving recommendations across all 10 modules.
-2. **Dedicated Data Exports**: Click **📥 Export Data** in the top right to download CSV or JSON reports strictly filtered to **15 days, 30 days, or 1 year**.
-3. **1-Year Mailflow Store**: View top recipients, external auto-forwarding risk domains, and trigger 1-year background aggregation jobs.
-4. **Retention Dashboard**: Dynamic filtering by `RBIusertype` (`VIP`, `StandardEmployee`, `Frontline`).
-5. **Intune vs Defender CVE Reports**: Compare device telemetry against vulnerability CVEs.
-6. **Legal Hold Case Management**: Complete workflow for Litigation Hold and In-Place hold requests.
+### Architecture Boundary Principle
+> **AI/LLM** → Used exclusively for generating recommendation **narrative text** (descriptions, risk insights, action summaries).  
+> **Python (Microsoft Graph API)** → Handles **all** data pulling, workflow execution, and remediation actions.
+
+| Layer | Technology | Responsibility |
+|-------|-----------|----------------|
+| **Data Collection** | Python + Microsoft Graph REST API | Fetches users, licenses, SP analytics, mailboxes, outages |
+| **Recommendation Logic** | Python (thresholds, rules) | Determines *what* to recommend and severity |
+| **Narrative Generation** | LLM (OpenAI / Gemini / Local) | Writes description & security_benefit text *only* |
+| **Workflow Execution** | Python + Graph / Defender APIs | Approve, reject, remediate — no LLM involvement |
+
+1. **AI Governance & LLM Orchestrator**: Click **⚙️ AI API Keys Config** in the sidebar to securely enter your OpenAI, Gemini, or Local LLM keys (encrypted in SQL Express). The LLM writes recommendation descriptions only — all execution is Python.
+2. **Dedicated Data Exports**: Click **📥 Export Data** in the top right to download CSV or JSON reports strictly filtered to **15 days, 30 days, or 1 year** (Python, no LLM).
+3. **1-Year Mailflow Store**: View top recipients, external auto-forwarding risk domains, and trigger 1-year background aggregation jobs (Python scheduled tasks).
+4. **Retention Dashboard**: Dynamic filtering by `RBIusertype` (`VIP`, `StandardEmployee`, `Frontline`) — policy applied via Python Graph API.
+5. **Intune vs Defender CVE Reports**: Compare device telemetry against vulnerability CVEs (Python Graph + Defender API data pull).
+6. **Legal Hold Case Management**: Complete workflow for Litigation Hold and In-Place hold requests — executed via Python Microsoft Graph REST API.
+7. **3-Phase Governance**: Phase 1 (Reporting), Phase 2 (Approve/Reject via UI), Phase 3 (Auto-Execute) — all phases execute via Python Graph API, never LLM.

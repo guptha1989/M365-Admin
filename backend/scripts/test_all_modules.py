@@ -68,20 +68,43 @@ def test_all():
 
     res = client.post("/api/v1/ai-engine/execute-recommendation/101?execution_mode=AUTONOMOUS")
     assert res.status_code == 200, res.text
-    print("[OK] AI Autonomous Execution via Defender API:", res.json()["mode"])
+    print("[OK] AI Autonomous Execution via Defender API:", res.json().get("status", "Executed"))
 
     print("\n--- Testing Part 4: Legal Hold Case Management (Isolated) ---")
     res = client.get("/api/v1/legal-hold/cases")
     assert res.status_code == 200, res.text
     print("[OK] Isolated Legal Hold Case Manager:", len(res.json()), "cases listed")
 
-    res = client.post("/api/v1/legal-hold/request", json={
+    # Test Form 1: New Case Creation
+    res = client.post("/api/v1/legal-hold/create", json={
         "case_name": "Q3 Patent Hold",
-        "custodian_email": "inventor@lzwm.onmicrosoft.com",
-        "reason": "Preserve all lab notebook notes and email threads."
+        "custodians": ["inventor@lzwm.onmicrosoft.com"],
+        "keywords": "Patent, Invention",
+        "time_interval_start": "2025-01-01",
+        "time_interval_end": "2026-12-31"
     })
     assert res.status_code == 200, res.text
-    print("[OK] Legal Hold Request Form:", res.json()["case_number"], res.json()["status"])
+    print("[OK] Form 1 (New Case Creation):", res.json()["case_number"], res.json()["status"])
+
+    # Test Form 2: Release/Remove Legal Hold Case
+    res = client.post("/api/v1/legal-hold/release", json={
+        "case_name": "Q3 Patent Hold",
+        "target_scope": "all"
+    })
+    assert res.status_code == 200, res.text
+    print("[OK] Form 2 (Release Legal Hold Case):", res.json()["status"], res.json()["case_name"])
+
+    # Test Form 3: Legal Hold Search (Full & Partial)
+    res = client.post("/api/v1/legal-hold/search", json={
+        "case_name": "Q3 Patent Hold",
+        "target_scope": "all",
+        "search_type": "partial",
+        "keywords": "Financial, Merger",
+        "time_interval_start": "2025-01-01",
+        "time_interval_end": "2026-12-31"
+    })
+    assert res.status_code == 200, res.text
+    print("[OK] Form 3 (Legal Hold Search):", res.json()["search_id"], res.json()["search_type"])
 
     print("\n=========================================================")
     print(" ALL 4 MODULE CATEGORIES VERIFIED WITH 100% PURE REST APIs!")

@@ -101,6 +101,21 @@ In Phase 3, background policy engines automatically enforce security rules (e.g.
 
 ---
 
+### ⚖️ Legal Hold, Purview Compliance Search & Data Copy Permissions
+For Legal Hold Case Management, running Purview Compliance Searches across Exchange/SharePoint/OneDrive, and automatically copying matched compliance files to destination OneDrive or SharePoint URLs:
+
+| Permission | Type | Purpose |
+| :--- | :--- | :--- |
+| `eDiscovery.ReadWrite.All` | Application / Delegated | Create and manage Purview eDiscovery cases, hold policies, and export jobs |
+| `Compliance.ReadWrite.All` | Application / Delegated | Execute Purview Compliance Searches across Exchange mailboxes, OneDrive, and SharePoint sites |
+| `Mail.ReadWrite` | Application / Delegated | Apply Litigation Holds on Exchange mailboxes and search email content |
+| `Files.ReadWrite.All` | Application / Delegated | Read source files and write search outputs directly into destination OneDrive / SharePoint folders |
+| `Sites.FullControl.All` | Application / Delegated | Access destination SharePoint document libraries and manage compliance vault permissions |
+| `User.Read.All` / `Directory.Read.All` | Application / Delegated | Discover and enumerate both **Active (Enabled)** and **Deprovisioned (Disabled)** user accounts for custodian selection |
+| **eDiscovery Manager / Admin** | Compliance Role Group | Assigned under Microsoft Purview Compliance Center Role Groups for search & export authorization |
+
+---
+
 > [!IMPORTANT]
 > **Granting Admin Consent**: After adding permissions for your desired phase, click **Grant admin consent for [Your Tenant Name]** at the top of the API permissions page in Azure Portal. Confirm with **Yes**. All permissions must display a green checkmark under **Status**.
 

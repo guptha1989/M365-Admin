@@ -19,15 +19,15 @@ class Settings(BaseSettings):
     )
     
     # Security & Entra ID (Azure AD) OAuth2 Configuration
-    SECRET_KEY: str = Field(default="SUPER_SECRET_KEY_CHANGE_IN_PRODUCTION_32BYTES_LONG!", description="JWT secret key")
-    ENCRYPTION_KEY: str = Field(default="gAAAAABk_CHANGE_THIS_FERNET_KEY_IN_PROD_32_BYTES_=", description="Fernet encryption key for AI API keys")
+    SECRET_KEY: str = Field(default="M365_ADMIN_JWT_SECRET_DEFAULT_KEY_32BYTES_MIN", description="JWT secret key")
+    ENCRYPTION_KEY: Optional[str] = Field(default=None, description="Fernet encryption key for AI API keys")
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24  # 1 day
     
-    ENTRA_TENANT_ID: Optional[str] = Field(default="00000000-0000-0000-0000-000000000000", description="Microsoft 365 Tenant ID")
-    ENTRA_CLIENT_ID: Optional[str] = Field(default="00000000-0000-0000-0000-000000000000", description="App Registration Client ID")
-    ENTRA_CLIENT_SECRET: Optional[str] = Field(default="SECRET_PLACEHOLDER", description="App Registration Client Secret")
-    M365_DEFENDER_API_KEY: Optional[str] = Field(default="sample_defender_key", description="M365 Defender API Key")
+    ENTRA_TENANT_ID: Optional[str] = Field(default=None, description="Microsoft 365 Tenant ID")
+    ENTRA_CLIENT_ID: Optional[str] = Field(default=None, description="App Registration Client ID")
+    ENTRA_CLIENT_SECRET: Optional[str] = Field(default=None, description="App Registration Client Secret")
+    M365_DEFENDER_API_KEY: Optional[str] = Field(default=None, description="M365 Defender API Key")
     
     # AI & LLM Provider API Keys & Failover Priority
     OPENAI_API_KEY: Optional[str] = Field(default=None, description="OpenAI API Key")

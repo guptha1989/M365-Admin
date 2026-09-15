@@ -16,7 +16,10 @@ from app.api.v1 import (
     mailflow,
     outages,
     sharepoint_onedrive,
-    teams_integration
+    teams_integration,
+    policies,
+    compliance_security,
+    requests
 )
 
 api_router = APIRouter()
@@ -24,11 +27,17 @@ api_router = APIRouter()
 # System Health Endpoint
 api_router.include_router(health.router, tags=["System Health"])
 
+# Centralized Request Management Router
+api_router.include_router(requests.router, prefix="/requests", tags=["Centralized Request Management Hub"])
+
 # Core Module Routers
 api_router.include_router(reports.router, prefix="/reports", tags=["Part 1: Reports Module"])
 api_router.include_router(management.router, prefix="/management", tags=["Part 2: Management Module"])
 api_router.include_router(ai_engine.router, prefix="/ai-engine", tags=["Part 3: AI Policy Engine & LLM Vault"])
 api_router.include_router(legal_hold.router, prefix="/legal-hold", tags=["Part 4: Legal Hold Case Management (Isolated)"])
+api_router.include_router(policies.router, prefix="/policies", tags=["Dedicated Policy Management Engine"])
+api_router.include_router(compliance_security.router, prefix="/compliance", tags=["Compliance & Security Governance"])
+api_router.include_router(compliance_security.router, prefix="/compliance-security", tags=["Compliance & Security Governance"])
 
 # Feature & UI Module Routers
 api_router.include_router(admin_reports.router, prefix="/admin-reports", tags=["Admin Reports"])
@@ -43,5 +52,6 @@ api_router.include_router(mailflow.router, prefix="/mailflow", tags=["Mailflow R
 api_router.include_router(outages.router, prefix="/outages", tags=["Outages Dashboard"])
 api_router.include_router(sharepoint_onedrive.router, prefix="/sharepoint", tags=["SharePoint & OneDrive"])
 api_router.include_router(teams_integration.router, prefix="/teams", tags=["Teams Integration"])
+
 
 
