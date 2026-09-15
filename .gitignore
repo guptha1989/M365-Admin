@@ -1,0 +1,38 @@
+# Environment and secrets
+.env
+*.env
+!.env.example
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+.venv/
+
+# Node / Web UI
+node_modules/
+dist/
+build/
+
+# Logs & temp
+*.log
+scratch/
+tmp/
+temp/
+
+# IDE / Editor settings
+.vscode/
+.idea/
+.DS_Store

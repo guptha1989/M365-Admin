@@ -1,0 +1,857 @@
+:root {
+    --bg-main: #F3F2F1;
+    --bg-card: #FFFFFF;
+    --bg-card-hover: #FAF9F8;
+    --border-color: #EDEBE9;
+    --border-highlight: #0078D4;
+    
+    --text-primary: #201F1E;
+    --text-secondary: #605E5C;
+    --text-muted: #A19F9D;
+    
+    --accent-blue: #0078D4;
+    --accent-cyan: #038387;
+    --accent-purple: #5C2D91;
+    --accent-green: #107C41;
+    --accent-amber: #D83B01;
+    --accent-red: #D13438;
+
+    --m365-dark-bar: #FFFFFF;
+    --m365-ribbon-bg: #FFFFFF;
+    --m365-card-bg: #FFFFFF;
+
+    --gradient-brand: linear-gradient(135deg, #0078D4 0%, #107C41 100%);
+    --shadow-glow: 0 1.6px 3.6px 0 rgba(0, 0, 0, 0.132), 0 0.3px 0.9px 0 rgba(0, 0, 0, 0.108);
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body.m365-theme {
+    background-color: var(--bg-main);
+    color: var(--text-primary);
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    overflow-x: hidden;
+}
+
+/* Global Microsoft 365 Admin Center Top Bar */
+.m365-global-bar {
+    height: 48px;
+    background-color: #FFFFFF;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 1rem;
+    border-bottom: 1px solid #EDEBE9;
+    color: #201F1E;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.m365-bar-left {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.m365-waffle-btn {
+    background: transparent;
+    border: none;
+    color: #0078D4;
+    cursor: pointer;
+    padding: 6px;
+    border-radius: 2px;
+    display: flex;
+    align-items: center;
+}
+
+.m365-waffle-btn:hover {
+    background: #F3F2F1;
+}
+
+.m365-title {
+    font-family: 'Segoe UI', sans-serif;
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: #201F1E;
+    letter-spacing: -0.2px;
+}
+
+.m365-bar-center {
+    flex: 1;
+    max-width: 480px;
+    margin: 0 1rem;
+}
+
+.m365-search-container {
+    display: flex;
+    align-items: center;
+    background: #FFFFFF;
+    border-radius: 4px;
+    padding: 0 10px;
+    height: 32px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+.m365-search-container .search-icon {
+    font-size: 0.85rem;
+    margin-right: 6px;
+    color: #605E5C;
+}
+
+.m365-search-input {
+    border: none;
+    background: transparent;
+    width: 100%;
+    font-family: 'Segoe UI', sans-serif;
+    font-size: 0.85rem;
+    color: #201F1E;
+    outline: none;
+}
+
+.m365-bar-right {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.m365-copilot-pill {
+    background: linear-gradient(135deg, #107C41 0%, #0078D4 50%, #8661C5 100%);
+    color: #FFFFFF;
+    font-size: 0.78rem;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+}
+
+.m365-icon-btn {
+    background: transparent;
+    border: none;
+    color: #605E5C;
+    cursor: pointer;
+    padding: 6px;
+    border-radius: 2px;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+}
+
+.m365-icon-btn:hover {
+    background: #F3F2F1;
+    color: #201F1E;
+}
+
+.m365-org-badge {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: #C8C6C4;
+    padding: 2px 6px;
+}
+
+.m365-user-avatar {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: #0078D4;
+    color: #FFFFFF;
+    font-weight: 600;
+    font-size: 0.8rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+/* Action Ribbon Bar (Image 1) */
+.m365-action-ribbon {
+    background: #FFFFFF;
+    border-bottom: 1px solid #EDEBE9;
+    padding: 0.5rem 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.ribbon-left {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.m365-toggle-switch {
+    position: relative;
+    display: inline-block;
+    width: 36px;
+    height: 20px;
+}
+
+.m365-toggle-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.toggle-slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-color: #A19F9D;
+    transition: .3s;
+    border-radius: 20px;
+}
+
+.toggle-slider:before {
+    position: absolute;
+    content: "";
+    height: 14px;
+    width: 14px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    transition: .3s;
+    border-radius: 50%;
+}
+
+input:checked + .toggle-slider {
+    background-color: var(--accent-blue);
+}
+
+input:checked + .toggle-slider:before {
+    transform: translateX(16px);
+}
+
+.toggle-label {
+    font-size: 0.85rem;
+    color: #201F1E;
+    font-weight: 600;
+}
+
+.ribbon-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+}
+
+.dropdown-pill {
+    padding: 0.35rem 0.85rem;
+    background: #FFFFFF;
+    border: 1px solid #8A8886;
+    border-radius: 2px;
+    font-size: 0.82rem;
+    color: #323130;
+    cursor: pointer;
+    font-weight: 500;
+}
+
+.dropdown-pill:hover {
+    background: #F3F2F1;
+    border-color: #323130;
+}
+
+.ribbon-btn {
+    padding: 0.35rem 0.75rem;
+    background: #FFFFFF;
+    border: 1px solid #8A8886;
+    border-radius: 2px;
+    color: #323130;
+    font-size: 0.82rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.ribbon-btn:hover {
+    background: #F3F2F1;
+    border-color: #323130;
+}
+
+/* Layout System */
+.app-layout {
+    display: grid;
+    grid-template-columns: 240px 1fr;
+    min-height: calc(100vh - 48px);
+}
+
+/* Sidebar Styles (Matching M365 Admin Center Light Theme) */
+.sidebar {
+    background: #F3F2F1;
+    border-right: 1px solid #EDEBE9;
+    padding: 1rem 0.5rem;
+    display: flex;
+    flex-direction: column;
+}
+
+.sidebar-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    flex: 1;
+    overflow-y: auto;
+}
+
+.nav-category {
+    display: flex;
+    flex-direction: column;
+}
+
+.nav-category-header {
+    display: flex;
+    align-items: center;
+    padding: 0.5rem 0.75rem;
+    background: transparent;
+    border: none;
+    border-radius: 2px;
+    cursor: pointer;
+    color: #323130;
+    transition: background 0.15s ease;
+}
+
+.nav-category-header:hover {
+    background: #E1DFDD;
+}
+
+.nav-category-header.active {
+    background: #EDEBE9;
+    color: #0078D4;
+}
+
+.category-title {
+    flex: 1;
+    font-family: 'Segoe UI', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #323130;
+}
+
+.nav-category-header.active .category-title {
+    color: #0078D4;
+}
+
+.nav-category .arrow-icon {
+    font-size: 0.7rem;
+    color: #605E5C;
+    transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    transform: rotate(90deg);
+}
+
+.nav-category.collapsed .arrow-icon {
+    transform: rotate(0deg);
+}
+
+.nav-subitems {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    padding-left: 0.75rem;
+    overflow: hidden;
+    transition: max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.25s ease;
+    max-height: 500px;
+    opacity: 1;
+}
+
+.nav-category.collapsed .nav-subitems {
+    max-height: 0;
+    opacity: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+    pointer-events: none;
+}
+
+.nav-item {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    padding: 0.45rem 0.75rem;
+    color: #484644;
+    text-decoration: none;
+    border-radius: 2px;
+    font-size: 0.83rem;
+    font-weight: 400;
+    transition: all 0.15s ease;
+    cursor: pointer;
+}
+
+.nav-subitems .nav-item {
+    border-left: 3px solid transparent;
+}
+
+.nav-item:hover {
+    background: #E1DFDD;
+    color: #201F1E;
+}
+
+.nav-subitems .nav-item.active {
+    border-left-color: #0078D4;
+    background: #EFF6FC;
+    color: #0078D4;
+    font-weight: 600;
+}
+
+.sidebar-footer {
+    padding-top: 1rem;
+    border-top: 1px solid var(--border-color);
+}
+
+/* Main Content Wrapper */
+.main-wrapper {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    overflow-y: auto;
+}
+
+.top-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.25rem 1.75rem;
+    border-bottom: 1px solid #EDEBE9;
+    background: #FFFFFF;
+}
+
+.header-left h1 {
+    font-family: 'Segoe UI', sans-serif;
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #201F1E;
+}
+
+.header-left p {
+    font-size: 0.85rem;
+    color: #605E5C;
+}
+
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.badge {
+    padding: 0.35rem 0.75rem;
+    border-radius: 4px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+}
+
+.badge-env {
+    background: #FFF4CE;
+    color: #797775;
+    border: 1px solid #F2C80F;
+}
+
+.badge-db {
+    background: #DFF6DD;
+    color: #107C41;
+    border: 1px solid #107C41;
+}
+
+.badge-db.db-connected {
+    background: #DFF6DD;
+    color: #107C41;
+    border: 1px solid #107C41;
+}
+
+.badge-db.db-offline {
+    background: #FDE8E8;
+    color: #C53030;
+    border: 1px solid #E53E3E;
+}
+
+/* Buttons (M365 Admin Center Style) */
+.btn {
+    padding: 0.5rem 1rem;
+    border-radius: 2px;
+    border: 1px solid transparent;
+    font-family: 'Segoe UI', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+}
+
+.btn-primary {
+    background: #0078D4;
+    color: #FFFFFF;
+    border-color: #0078D4;
+}
+
+.btn-primary:hover {
+    background: #106EBE;
+    border-color: #106EBE;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+}
+
+.btn-secondary {
+    background: #FFFFFF;
+    color: #323130;
+    border: 1px solid #8A8886;
+}
+
+.btn-secondary:hover {
+    background: #F3F2F1;
+    border-color: #323130;
+}
+
+.btn-accent {
+    background: #107C41;
+    color: #FFFFFF;
+}
+
+.btn-block {
+    width: 100%;
+}
+
+/* Dashboard Grid Cards (Image 1 M365 Cards Style) */
+.content-body {
+    padding: 1.5rem 1.75rem;
+    background: #F8F9FA;
+    min-height: calc(100vh - 120px);
+}
+
+.grid-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 1.25rem;
+    margin-bottom: 1.5rem;
+}
+
+.card {
+    background: #FFFFFF;
+    border: 1px solid #E1DFDD;
+    border-radius: 4px;
+    padding: 1.25rem 1.5rem;
+    transition: all 0.2s ease;
+    box-shadow: 0 1.6px 3.6px 0 rgba(0, 0, 0, 0.132), 0 0.3px 0.9px 0 rgba(0, 0, 0, 0.108);
+    color: #201F1E;
+}
+
+.card:hover {
+    box-shadow: 0 3.2px 7.2px 0 rgba(0, 0, 0, 0.132), 0 0.6px 1.8px 0 rgba(0, 0, 0, 0.108);
+}
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.card-title {
+    font-family: 'Segoe UI', sans-serif;
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: #201F1E;
+}
+
+.card-impact-high {
+    border-top: 3px solid #D13438;
+}
+
+.card-impact-medium {
+    border-top: 3px solid #D83B01;
+}
+
+.card-impact-low {
+    border-top: 3px solid #0078D4;
+}
+
+.savings-tag {
+    background: #DFF6DD;
+    color: #107C41;
+    font-weight: 700;
+    padding: 0.25rem 0.5rem;
+    border-radius: 2px;
+    font-size: 0.82rem;
+}
+
+/* Data Tables (M365 Admin Center Data Table Style) */
+.table-container {
+    width: 100%;
+    overflow-x: auto;
+    background: #FFFFFF;
+    border: 1px solid #E1DFDD;
+    border-radius: 4px;
+    margin-top: 1.25rem;
+}
+
+.table, .data-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+    font-size: 0.85rem;
+    background: #FFFFFF;
+}
+
+.table th, .data-table th {
+    background: #F3F2F1;
+    padding: 0.75rem 1rem;
+    color: #323130;
+    font-weight: 600;
+    font-family: 'Segoe UI', sans-serif;
+    border-bottom: 1px solid #EDEBE9;
+}
+
+.table td, .data-table td {
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid #EDEBE9;
+    color: #201F1E;
+}
+
+.table tr:hover, .data-table tr:hover {
+    background: #F8F9FA;
+}
+
+/* Modals */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.modal-card {
+    background: #FFFFFF;
+    color: #201F1E;
+    border: 1px solid #E1DFDD;
+    border-radius: 4px;
+    width: 100%;
+    max-width: 520px;
+    padding: 1.75rem;
+    box-shadow: 0 25.6px 57.6px 0 rgba(0, 0, 0, 0.22), 0 4.8px 14.4px 0 rgba(0, 0, 0, 0.18);
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.25rem;
+}
+
+.modal-close {
+    background: none;
+    border: none;
+    color: #605E5C;
+    font-size: 1.5rem;
+    cursor: pointer;
+}
+
+.form-group {
+    margin-bottom: 1rem;
+}
+
+.form-group label {
+    display: block;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: #323130;
+    margin-bottom: 0.35rem;
+}
+
+.form-control {
+    width: 100%;
+    padding: 0.5rem 0.75rem;
+    background: #FFFFFF;
+    border: 1px solid #8A8886;
+    border-radius: 2px;
+    color: #201F1E;
+    font-family: 'Segoe UI', sans-serif;
+    font-size: 0.88rem;
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: #0078D4;
+    box-shadow: 0 0 0 1px #0078D4;
+}
+
+.provider-status-list {
+    margin-top: 1.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border-color);
+}
+
+/* API Integration Hub Modal & Tabs */
+.modal-card-wide {
+    max-width: 880px;
+    width: 92%;
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+.api-hub-tabs {
+    display: flex;
+    gap: 8px;
+    border-bottom: 1px solid var(--border-color);
+    margin-bottom: 1.25rem;
+    overflow-x: auto;
+    padding-bottom: 4px;
+}
+
+.tab-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    padding: 0.6rem 1rem;
+    font-size: 0.88rem;
+    font-weight: 600;
+    border-radius: 8px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.2s ease;
+}
+
+.tab-btn:hover {
+    color: var(--text-primary);
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.tab-btn.active {
+    color: var(--accent-blue);
+    background: rgba(59, 130, 246, 0.15);
+    border-bottom: 2px solid var(--accent-blue);
+}
+
+.tab-content {
+    display: none;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+.tab-desc {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    margin-bottom: 1.25rem;
+    line-height: 1.4;
+}
+
+.api-form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    background: rgba(255, 255, 255, 0.02);
+    padding: 1.25rem;
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+}
+
+.integrations-list-container {
+    margin-top: 1.5rem;
+}
+
+.integrations-list-container h4 {
+    font-size: 0.95rem;
+    margin-bottom: 1rem;
+    color: var(--text-primary);
+}
+
+.provider-cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 1rem;
+}
+
+.provider-card {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    padding: 1rem;
+    position: relative;
+}
+
+.provider-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.provider-name-tag {
+    font-weight: 700;
+    font-size: 0.95rem;
+    color: var(--text-primary);
+    text-transform: uppercase;
+}
+
+.priority-tag {
+    background: rgba(59, 130, 246, 0.2);
+    color: var(--accent-blue);
+    font-size: 0.75rem;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-weight: 600;
+}
+
+.provider-detail-line {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin-bottom: 4px;
+    word-break: break-all;
+}
+
+.terminal-box {
+    background: #F8FAFC;
+    border: 1px solid #E2E8F0;
+    border-radius: 8px;
+    padding: 1rem;
+    font-family: 'Consolas', 'Courier New', monospace;
+    font-size: 0.83rem;
+    color: #0F172A;
+    min-height: 180px;
+    max-height: 320px;
+    overflow-y: auto;
+    white-space: pre-wrap;
+    line-height: 1.5;
+}
+
+/* Light Theme Alignment for Dropdown Popups & Select Fields Menu */
+.cols-dropdown-menu, .column-toggle-menu {
+    background: #FFFFFF !important;
+    border: 1px solid #EDEBE9 !important;
+    border-radius: 6px !important;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12) !important;
+    color: #201F1E !important;
+}
+
+.cols-dropdown-header {
+    background: #F3F2F1 !important;
+    border-bottom: 1px solid #EDEBE9 !important;
+    color: #201F1E !important;
+    font-weight: 600 !important;
+}
+
+.cols-dropdown-menu label {
+    color: #201F1E !important;
+    border-bottom: 1px solid #F3F2F1 !important;
+}
+
+.cols-dropdown-menu label:hover {
+    background: #FAF9F8 !important;
+}
+
