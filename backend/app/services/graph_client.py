@@ -178,7 +178,7 @@ class MicrosoftGraphClient:
             try:
                 headers = {"Authorization": f"Bearer {token}"}
                 top_limit = self.max_objects or 50
-                r = requests.get(f"https://graph.microsoft.com/v1.0/users?$top={top_limit}&$select=id,userPrincipalName,displayName,department,assignedLicenses,accountEnabled,createdDateTime", headers=headers, timeout=10)
+                r = requests.get(f"https://graph.microsoft.com/v1.0/users?$top={top_limit}&$select=id,userPrincipalName,displayName,department,assignedLicenses,accountEnabled,createdDateTime,signInActivity", headers=headers, timeout=10)
                 if r.status_code == 200:
                     users_raw = r.json().get("value", [])
                     departments = ["IT", "Finance", "Legal", "Executive", "Engineering", "Sales"]
@@ -188,6 +188,8 @@ class MicrosoftGraphClient:
                         rbi_type = "VIP" if dept in ["Executive", "Legal"] else ("Frontline" if dept == "Sales" else "StandardEmployee")
                         has_lic = bool(u.get("assignedLicenses"))
                         lic_name = "MICROSOFT 365 E5" if rbi_type == "VIP" else ("MICROSOFT 365 E3" if has_lic else "UNLICENSED")
+                        sign_in_act = u.get("signInActivity") or {}
+                        last_signin = sign_in_act.get("lastSuccessfulSignInDateTime") or sign_in_act.get("lastSignInDateTime") or u.get("lastSuccessfulSignInDateTime") or (datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(days=(idx + 1) * 6)).strftime("%Y-%m-%d %H:%M:%S")
                         users.append({
                             "id": u.get("id"),
                             "userPrincipalName": u.get("userPrincipalName"),
@@ -195,7 +197,8 @@ class MicrosoftGraphClient:
                             "department": dept,
                             "RBIusertype": rbi_type,
                             "assignedLicense": lic_name,
-                            "lastLoginDate": (datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(days=(idx + 1) * 3)).strftime("%Y-%m-%d"),
+                            "lastLoginDate": last_signin.split(" ")[0].split("T")[0],
+                            "lastSuccessfulSignInDateTime": last_signin,
                             "accountEnabled": u.get("accountEnabled", True),
                             "mailboxPermissions": f"Full Access: {dept}-SharedMbx, Corp-Vault; Send As: {dept.lower()}-desk@contoso.com" if idx % 2 == 0 else "Standard Mailbox; No Shared Delegation",
                             "oneDrivePermissions": f"{(idx*4.2+12.0):.1f} GB Used / 1 TB; {idx+3} External Links; {idx%3+1} Guests"
@@ -241,7 +244,8 @@ class MicrosoftGraphClient:
                 "department": dept,
                 "RBIusertype": rbi_type,
                 "assignedLicense": "MICROSOFT 365 E5" if rbi_type == "VIP" else "MICROSOFT 365 E3",
-                "lastLoginDate": (datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(days=i * 2)).strftime("%Y-%m-%d"),
+                "lastLoginDate": (datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(days=i * 6)).strftime("%Y-%m-%d"),
+                "lastSuccessfulSignInDateTime": (datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(days=i * 6)).strftime("%Y-%m-%d %H:%M:%S"),
                 "accountEnabled": is_enabled,
                 "mailboxPermissions": mbx_perm,
                 "oneDrivePermissions": onedrive_perm
@@ -743,19 +747,26 @@ class MicrosoftGraphClient:
 
     def get_azure_ad_inactive_users(self, inactivity_days: int = 90, user_category: str = "both") -> List[Dict[str, Any]]:
         """
-        Fetch Azure AD accounts filtered by inactivity days (60, 90, 120) and category ('inactive', 'disabled', 'both').
+        Fetch Azure AD accounts filtered by inactivity days (30, 60, 90, 180, 240) based on last successful sign-in attribute.
         Includes Mailbox and OneDrive permission details for license reclamation & downgrade decisions.
         """
         users = self.get_users_list()
         result = []
         today = datetime.datetime.now(datetime.timezone.utc)
         for u in users:
-            login_dt = datetime.datetime.strptime(u["lastLoginDate"], "%Y-%m-%d").replace(tzinfo=datetime.timezone.utc)
+            sign_in_val = u.get("lastSuccessfulSignInDateTime") or u.get("lastLoginDate") or "2026-01-01"
+            date_str = sign_in_val.split(" ")[0].split("T")[0]
+            try:
+                login_dt = datetime.datetime.strptime(date_str, "%Y-%m-%d").replace(tzinfo=datetime.timezone.utc)
+            except Exception:
+                login_dt = today - datetime.timedelta(days=120)
+
             diff_days = (today - login_dt).days
             is_disabled = not u.get("accountEnabled", True)
             is_inactive = diff_days >= inactivity_days
 
             u_copy = dict(u)
+            u_copy["lastSuccessfulSignInDateTime"] = sign_in_val
             u_copy["inactiveDays"] = diff_days
             u_copy["accountStatus"] = "Disabled" if is_disabled else "Active"
             
@@ -1027,7 +1038,7 @@ class MicrosoftGraphClient:
         }
 
     def get_sharepoint_inactive_libraries(self, window_days: int = 90) -> Dict[str, Any]:
-        """Fetch SharePoint Library-Level Inactive Report filtered by inactivity threshold (90, 120, 180 days)."""
+        """Fetch SharePoint Library-Level Inactive Report filtered by inactivity threshold (90, 120, 180 days). Includes site members & inactive file URLs."""
         domain = self.get_primary_domain()
         all_libraries = [
             {
@@ -1042,7 +1053,16 @@ class MicrosoftGraphClient:
                 "storageReclaimPotentialGB": 58.5,
                 "annualCostSavingsUSD": 1404.0,
                 "sensitivityLevel": "NORMAL",
-                "primaryOwner": f"it.admin@{domain}"
+                "primaryOwner": f"it.admin@{domain}",
+                "siteMembersCount": 18,
+                "siteMembersSummary": "18 Members (IT Ops, SecOps & Infrastructure)",
+                "siteMembersList": [f"it.admin@{domain}", f"secops@{domain}", f"helpdesk.lead@{domain}", f"sys.architect@{domain}", f"cloud.admin@{domain}"],
+                "inactiveFiles": [
+                    {"fileName": "Server_Backup_Logs_2023.zip", "url": f"https://{domain}.sharepoint.com/sites/itops/ServerBackups/Server_Backup_Logs_2023.zip", "lastAccessedDaysAgo": 105, "lastAccessedDate": "2026-06-02", "sizeMB": 4200.0, "owner": f"it.admin@{domain}", "sensitivityLevel": "NORMAL"},
+                    {"fileName": "VM_Snapshot_Image_Legacy.iso", "url": f"https://{domain}.sharepoint.com/sites/itops/ServerBackups/VM_Snapshot_Image_Legacy.iso", "lastAccessedDaysAgo": 122, "lastAccessedDate": "2026-05-16", "sizeMB": 18500.0, "owner": f"sys.architect@{domain}", "sensitivityLevel": "NORMAL"},
+                    {"fileName": "Unused_Infrastructure_Specs_2023.docx", "url": f"https://{domain}.sharepoint.com/sites/itops/ServerBackups/Unused_Infrastructure_Specs_2023.docx", "lastAccessedDaysAgo": 115, "lastAccessedDate": "2026-05-23", "sizeMB": 42.0, "owner": f"it.admin@{domain}", "sensitivityLevel": "NORMAL"},
+                    {"fileName": "Router_Config_Dump_2022.cfg", "url": f"https://{domain}.sharepoint.com/sites/itops/ServerBackups/Router_Config_Dump_2022.cfg", "lastAccessedDaysAgo": 140, "lastAccessedDate": "2026-04-28", "sizeMB": 12.5, "owner": f"secops@{domain}", "sensitivityLevel": "NORMAL"}
+                ]
             },
             {
                 "siteName": "Sales Operations",
@@ -1056,7 +1076,15 @@ class MicrosoftGraphClient:
                 "storageReclaimPotentialGB": 28.1,
                 "annualCostSavingsUSD": 674.0,
                 "sensitivityLevel": "MEDIUM (PII Contained)",
-                "primaryOwner": f"sales.lead@{domain}"
+                "primaryOwner": f"sales.lead@{domain}",
+                "siteMembersCount": 24,
+                "siteMembersSummary": "24 Members (Sales, Account Managers & Finance)",
+                "siteMembersList": [f"sales.lead@{domain}", f"acct.mgr@{domain}", f"billing.spec@{domain}", f"vp.sales@{domain}"],
+                "inactiveFiles": [
+                    {"fileName": "Customer_Export_Backup_2023.csv", "url": f"https://{domain}.sharepoint.com/sites/salesops/ClientQuotes/Customer_Export_Backup_2023.csv", "lastAccessedDaysAgo": 135, "lastAccessedDate": "2026-05-03", "sizeMB": 920.0, "owner": f"sales.lead@{domain}", "sensitivityLevel": "MEDIUM (PII Contained)"},
+                    {"fileName": "Archived_Pricing_Grid_2021.xlsx", "url": f"https://{domain}.sharepoint.com/sites/salesops/ClientQuotes/Archived_Pricing_Grid_2021.xlsx", "lastAccessedDaysAgo": 150, "lastAccessedDate": "2026-04-18", "sizeMB": 180.0, "owner": f"acct.mgr@{domain}", "sensitivityLevel": "MEDIUM (PII Contained)"},
+                    {"fileName": "RFP_Submission_Draft_Historical.pdf", "url": f"https://{domain}.sharepoint.com/sites/salesops/ClientQuotes/RFP_Submission_Draft_Historical.pdf", "lastAccessedDaysAgo": 165, "lastAccessedDate": "2026-04-03", "sizeMB": 65.0, "owner": f"vp.sales@{domain}", "sensitivityLevel": "MEDIUM (PII Contained)"}
+                ]
             },
             {
                 "siteName": "Finance Confidential",
@@ -1070,7 +1098,15 @@ class MicrosoftGraphClient:
                 "storageReclaimPotentialGB": 9.8,
                 "annualCostSavingsUSD": 235.0,
                 "sensitivityLevel": "HIGH (DLP Restricted)",
-                "primaryOwner": f"finance.admin@{domain}"
+                "primaryOwner": f"finance.admin@{domain}",
+                "siteMembersCount": 12,
+                "siteMembersSummary": "12 Members (Finance, Controllers & External Auditors)",
+                "siteMembersList": [f"finance.admin@{domain}", f"cfo@{domain}", f"lead.auditor@{domain}", f"treasury@{domain}"],
+                "inactiveFiles": [
+                    {"fileName": "Q3_2023_Financial_Forecast.xlsx", "url": f"https://{domain}.sharepoint.com/sites/finance/FinancialStatements/Q3_2023_Financial_Forecast.xlsx", "lastAccessedDaysAgo": 180, "lastAccessedDate": "2026-03-19", "sizeMB": 450.0, "owner": f"finance.admin@{domain}", "sensitivityLevel": "HIGH (DLP Restricted)"},
+                    {"fileName": "Tax_Audit_Submissions_2022.pdf", "url": f"https://{domain}.sharepoint.com/sites/finance/FinancialStatements/Tax_Audit_Submissions_2022.pdf", "lastAccessedDaysAgo": 190, "lastAccessedDate": "2026-03-09", "sizeMB": 280.0, "owner": f"cfo@{domain}", "sensitivityLevel": "HIGH (DLP Restricted)"},
+                    {"fileName": "Payroll_Reconciliation_Archive.xlsx", "url": f"https://{domain}.sharepoint.com/sites/finance/FinancialStatements/Payroll_Reconciliation_Archive.xlsx", "lastAccessedDaysAgo": 205, "lastAccessedDate": "2026-02-22", "sizeMB": 510.0, "owner": f"lead.auditor@{domain}", "sensitivityLevel": "HIGH (DLP Restricted)"}
+                ]
             },
             {
                 "siteName": "HR Internal",
@@ -1084,7 +1120,14 @@ class MicrosoftGraphClient:
                 "storageReclaimPotentialGB": 44.0,
                 "annualCostSavingsUSD": 1056.0,
                 "sensitivityLevel": "MEDIUM (PII Contained)",
-                "primaryOwner": f"hr.director@{domain}"
+                "primaryOwner": f"hr.director@{domain}",
+                "siteMembersCount": 15,
+                "siteMembersSummary": "15 Members (HR Business Partners & Legal Counsel)",
+                "siteMembersList": [f"hr.director@{domain}", f"hr.bp@{domain}", f"legal.counsel@{domain}", f"recruiter.lead@{domain}"],
+                "inactiveFiles": [
+                    {"fileName": "HR_Training_Videos_2022.mp4", "url": f"https://{domain}.sharepoint.com/sites/hr/FormerEmpVault/HR_Training_Videos_2022.mp4", "lastAccessedDaysAgo": 195, "lastAccessedDate": "2026-03-04", "sizeMB": 6400.0, "owner": f"hr.director@{domain}", "sensitivityLevel": "MEDIUM (PII Contained)"},
+                    {"fileName": "Employee_Separation_Form_Template.docx", "url": f"https://{domain}.sharepoint.com/sites/hr/FormerEmpVault/Employee_Separation_Form_Template.docx", "lastAccessedDaysAgo": 210, "lastAccessedDate": "2026-02-17", "sizeMB": 18.0, "owner": f"hr.bp@{domain}", "sensitivityLevel": "MEDIUM (PII Contained)"}
+                ]
             },
             {
                 "siteName": "Legal Holds Archive",
@@ -1098,7 +1141,14 @@ class MicrosoftGraphClient:
                 "storageReclaimPotentialGB": 98.0,
                 "annualCostSavingsUSD": 2350.0,
                 "sensitivityLevel": "HIGH (Legal Hold Protected)",
-                "primaryOwner": f"legal.counsel@{domain}"
+                "primaryOwner": f"legal.counsel@{domain}",
+                "siteMembersCount": 8,
+                "siteMembersSummary": "8 Members (Legal Counsel & eDiscovery Custodians)",
+                "siteMembersList": [f"legal.counsel@{domain}", f"paralegal@{domain}", f"external.counsel@{domain}"],
+                "inactiveFiles": [
+                    {"fileName": "Patent_Infringement_Evidence_2023.pst", "url": f"https://{domain}.sharepoint.com/sites/legalarchive/LitigationDocs/Patent_Infringement_Evidence_2023.pst", "lastAccessedDaysAgo": 220, "lastAccessedDate": "2026-02-07", "sizeMB": 14200.0, "owner": f"legal.counsel@{domain}", "sensitivityLevel": "HIGH (Legal Hold Protected)"},
+                    {"fileName": "Court_Subpoena_Document_Scan.pdf", "url": f"https://{domain}.sharepoint.com/sites/legalarchive/LitigationDocs/Court_Subpoena_Document_Scan.pdf", "lastAccessedDaysAgo": 240, "lastAccessedDate": "2026-01-28", "sizeMB": 120.0, "owner": f"paralegal@{domain}", "sensitivityLevel": "HIGH (Legal Hold Protected)"}
+                ]
             },
             {
                 "siteName": "Legacy Marketing 2023",
@@ -1112,7 +1162,14 @@ class MicrosoftGraphClient:
                 "storageReclaimPotentialGB": 84.2,
                 "annualCostSavingsUSD": 2020.0,
                 "sensitivityLevel": "NORMAL",
-                "primaryOwner": f"mark.legacy@{domain}"
+                "primaryOwner": f"mark.legacy@{domain}",
+                "siteMembersCount": 35,
+                "siteMembersSummary": "35 Members (Marketing Agency & Design Teams)",
+                "siteMembersList": [f"mark.legacy@{domain}", f"art.director@{domain}", f"agency.partner@{domain}"],
+                "inactiveFiles": [
+                    {"fileName": "Brand_Assets_HiRes_2022.zip", "url": f"https://{domain}.sharepoint.com/sites/mkt2023/CampaignVault/Brand_Assets_HiRes_2022.zip", "lastAccessedDaysAgo": 410, "lastAccessedDate": "2025-08-01", "sizeMB": 12500.0, "owner": f"mark.legacy@{domain}", "sensitivityLevel": "NORMAL"},
+                    {"fileName": "Commercial_Video_Broll_Render.mov", "url": f"https://{domain}.sharepoint.com/sites/mkt2023/CampaignVault/Commercial_Video_Broll_Render.mov", "lastAccessedDaysAgo": 430, "lastAccessedDate": "2025-07-12", "sizeMB": 24000.0, "owner": f"art.director@{domain}", "sensitivityLevel": "NORMAL"}
+                ]
             }
         ]
 
@@ -1286,6 +1343,133 @@ class MicrosoftGraphClient:
                 ]
             }
         ]
+
+    def get_domain_security_report(self) -> Dict[str, Any]:
+        """
+        Fetch domain security telemetry across tenant custom domains.
+        Audits DKIM selector status, DMARC policy enforcement, SPF record syntax, and MX host validity.
+        """
+        domain = self.get_primary_domain()
+        
+        domains_data = [
+            {
+                "id": "dom-01",
+                "tenant_name": "Contoso Corporation",
+                "tenant_id": "contoso.com",
+                "domain": domain,
+                "is_default": True,
+                "is_initial": False,
+                "dkim_status": "Enabled (RSA 2048-bit)",
+                "dkim_selector": f"selector1-{domain.replace('.', '-')}.member.onmicrosoft.com",
+                "dkim_key_size": "2048-bit",
+                "dmarc_status": "Enforced (p=reject)",
+                "dmarc_policy": "p=reject; pct=100; rua=mailto:dmarc-rua@contoso.com",
+                "spf_status": "Pass (Strict -all)",
+                "spf_record": "v=spf1 include:spf.protection.outlook.com -all",
+                "mx_status": "Valid",
+                "mx_host": f"{domain.replace('.', '-')}.mail.protection.outlook.com",
+                "dns_health_score": 100,
+                "security_rating": "EXCELLENT",
+                "recommendation": "Optimal configuration. Fully protected against domain spoofing and phishing."
+            },
+            {
+                "id": "dom-02",
+                "tenant_name": "Contoso Corporation",
+                "tenant_id": "contoso.com",
+                "domain": f"mail.{domain}",
+                "is_default": False,
+                "is_initial": False,
+                "dkim_status": "Enabled (RSA 2048-bit)",
+                "dkim_selector": f"selector1-mail-{domain.replace('.', '-')}.member.onmicrosoft.com",
+                "dkim_key_size": "2048-bit",
+                "dmarc_status": "Quarantine (p=quarantine)",
+                "dmarc_policy": "p=quarantine; pct=100; rua=mailto:dmarc-rua@contoso.com",
+                "spf_status": "Pass (SoftFail ~all)",
+                "spf_record": "v=spf1 include:spf.protection.outlook.com ~all",
+                "mx_status": "Valid",
+                "mx_host": f"mail-{domain.replace('.', '-')}.mail.protection.outlook.com",
+                "dns_health_score": 85,
+                "security_rating": "GOOD",
+                "recommendation": "Upgrade DMARC policy from quarantine to reject (p=reject) for max spoof prevention."
+            },
+            {
+                "id": "dom-03",
+                "tenant_name": "Fabrikam Inc",
+                "tenant_id": "fabrikam.com",
+                "domain": "fabrikam.com",
+                "is_default": True,
+                "is_initial": False,
+                "dkim_status": "Enabled (RSA 2048-bit)",
+                "dkim_selector": "selector1-fabrikam-com.member.onmicrosoft.com",
+                "dkim_key_size": "2048-bit",
+                "dmarc_status": "Enforced (p=reject)",
+                "dmarc_policy": "v=DMARC1; p=reject; pct=100; rua=mailto:security@fabrikam.com",
+                "spf_status": "Pass (Strict -all)",
+                "spf_record": "v=spf1 include:spf.protection.outlook.com -all",
+                "mx_status": "Valid",
+                "mx_host": "fabrikam-com.mail.protection.outlook.com",
+                "dns_health_score": 98,
+                "security_rating": "EXCELLENT",
+                "recommendation": "Strict DMARC policy enforced. Domain protection active."
+            },
+            {
+                "id": "dom-04",
+                "tenant_name": "Fabrikam Inc",
+                "tenant_id": "fabrikam.com",
+                "domain": "sales.fabrikam.com",
+                "is_default": False,
+                "is_initial": False,
+                "dkim_status": "Disabled",
+                "dkim_selector": "None",
+                "dkim_key_size": "N/A",
+                "dmarc_status": "None (p=none)",
+                "dmarc_policy": "v=DMARC1; p=none; rua=mailto:dmarc@fabrikam.com",
+                "spf_status": "Warning (Neutral ?all)",
+                "spf_record": "v=spf1 include:spf.protection.outlook.com ?all",
+                "mx_status": "Valid",
+                "mx_host": "sales-fabrikam-com.mail.protection.outlook.com",
+                "dns_health_score": 45,
+                "security_rating": "AT_RISK",
+                "recommendation": "CRITICAL: Enable DKIM signing and set DMARC policy to p=reject to block email impersonation."
+            },
+            {
+                "id": "dom-05",
+                "tenant_name": "Litware Ltd",
+                "tenant_id": "litware.com",
+                "domain": "litware.com",
+                "is_default": True,
+                "is_initial": False,
+                "dkim_status": "Enabled (RSA 2048-bit)",
+                "dkim_selector": "selector1-litware-com.member.onmicrosoft.com",
+                "dkim_key_size": "2048-bit",
+                "dmarc_status": "Quarantine (p=quarantine)",
+                "dmarc_policy": "v=DMARC1; p=quarantine; pct=100",
+                "spf_status": "Pass (Strict -all)",
+                "spf_record": "v=spf1 include:spf.protection.outlook.com -all",
+                "mx_status": "Valid",
+                "mx_host": "litware-com.mail.protection.outlook.com",
+                "dns_health_score": 90,
+                "security_rating": "GOOD",
+                "recommendation": "Recommended: Upgrade DMARC policy from quarantine to reject."
+            }
+        ]
+
+        total_domains = len(domains_data)
+        dkim_enabled = len([d for d in domains_data if "Enabled" in d["dkim_status"]])
+        dmarc_enforced = len([d for d in domains_data if "reject" in d["dmarc_status"] or "quarantine" in d["dmarc_status"]])
+        spf_strict = len([d for d in domains_data if "Strict" in d["spf_status"] or "Pass" in d["spf_status"]])
+
+        return {
+            "total_domains": total_domains,
+            "dkim_enabled_count": dkim_enabled,
+            "dkim_enabled_pct": round((dkim_enabled / total_domains) * 100, 1),
+            "dmarc_enforced_count": dmarc_enforced,
+            "dmarc_enforced_pct": round((dmarc_enforced / total_domains) * 100, 1),
+            "spf_pass_count": spf_strict,
+            "spf_pass_pct": round((spf_strict / total_domains) * 100, 1),
+            "at_risk_domains_count": len([d for d in domains_data if d["security_rating"] == "AT_RISK"]),
+            "domains": domains_data
+        }
 
 # Global singleton client
 graph_client = MicrosoftGraphClient()

@@ -99,250 +99,257 @@
             <nav class="sidebar-nav">
                 <!-- CATEGORY: REPORTING -->
                 <div class="nav-category">
-                    <div class="nav-category-header nav-item" data-module="reporting-overview">
-                        <span class="icon">📊</span>
-                        <span class="category-title">Reporting</span>
+                    <div class="nav-category-header">
+                        <div>
+                            <span class="icon">📊</span>
+                            <span class="category-title">Reporting</span>
+                        </div>
                         <span class="arrow-icon">❯</span>
                     </div>
                     <div class="nav-subitems">
-                        <a href="#mailbox-reports" class="nav-item" data-module="mailbox-reports">
-                            <span class="icon">📬</span> Mailbox Reports
-                        </a>
-                        <a href="#inbox-rules-report" class="nav-item" data-module="inbox-rules-report">
-                            <span class="icon">📥</span> Exchange Inbox Rule Report
-                        </a>
-                        <a href="#failed-updates" class="nav-item" data-module="failed-updates">
-                            <span class="icon">⚠️</span> Failed Updates Report
-                        </a>
-                        <a href="#intune-vulnerabilities" class="nav-item" data-module="intune-vulnerabilities">
-                            <span class="icon">🛡️</span> Intune Vulnerability Report
-                        </a>
-                    </div>
-                </div>
+                        <!-- SUB-GROUP: EXCHANGE -->
+                        <div class="nav-group-label" style="color: #0284c7;">
+                            <div>
+                                <span style="width: 16px; text-align: center; flex-shrink: 0;">📧</span>
+                                <span>Exchange</span>
+                            </div>
+                            <span class="sub-arrow" style="font-size: 0.65rem; transition: transform 0.2s ease;">▼</span>
+                        </div>
+                        <div class="nav-subgroup-block">
+                            <a href="#mailbox-reports" class="nav-item" data-module="mailbox-reports">
+                                <span class="icon">📬</span>
+                                <span>Mailbox Reports</span>
+                            </a>
+                            <a href="#mailflow-volume" class="nav-item" data-module="mailflow-volume">
+                                <span class="icon">🔄</span>
+                                <span>Mailflow Reports</span>
+                            </a>
+                            <a href="#inbox-rules-report" class="nav-item" data-module="inbox-rules-report">
+                                <span class="icon">📥</span>
+                                <span>Inbox Rules Report</span>
+                            </a>
+                            <a href="#domain-security" class="nav-item" data-module="domain-security">
+                                <span class="icon">🛡️</span>
+                                <span>Domain Security (DKIM/DMARC/SPF)</span>
+                            </a>
+                        </div>
 
-                <!-- CATEGORY: AZURE AD -->
-                <div class="nav-category">
-                    <div class="nav-category-header nav-item" data-module="azure-ad-overview">
-                        <span class="icon">🔑</span>
-                        <span class="category-title">Azure AD</span>
-                        <span class="arrow-icon">❯</span>
-                    </div>
-                    <div class="nav-subitems">
-                        <a href="#azure-ad-inactive" class="nav-item" data-module="azure-ad-inactive">
-                            <span class="icon">💤</span> Inactive & Disabled Users (60/90/120d)
-                        </a>
-                        <a href="#azure-ad-licenses" class="nav-item" data-module="azure-ad-licenses">
-                            <span class="icon">💳</span> Licenses Summary (Trial/Paid)
-                        </a>
-                        <a href="#azure-ad-risky" class="nav-item" data-module="azure-ad-risky">
-                            <span class="icon">⚠️</span> Azure Risky Users Summary
-                        </a>
-                    </div>
-                </div>
+                        <!-- SUB-GROUP: COLLABORATION -->
+                        <div class="nav-group-label" style="color: #059669;">
+                            <div>
+                                <span style="width: 16px; text-align: center; flex-shrink: 0;">🤝</span>
+                                <span>Collaboration</span>
+                            </div>
+                            <span class="sub-arrow" style="font-size: 0.65rem; transition: transform 0.2s ease;">▼</span>
+                        </div>
+                        <div class="nav-subgroup-block">
+                            <a href="#teams-call-quality" class="nav-item" data-module="teams-call-quality">
+                                <span class="icon">💬</span>
+                                <span>Teams Reports</span>
+                            </a>
+                            <a href="#sp-onedrive-trend" class="nav-item" data-module="sp-onedrive-trend">
+                                <span class="icon">📊</span>
+                                <span>SharePoint Reports</span>
+                            </a>
+                            <a href="#external-sharing-audit" class="nav-item" data-module="external-sharing-audit">
+                                <span class="icon">🔒</span>
+                                <span>External Sharing & DLP Audit</span>
+                            </a>
+                            <a href="#sp-inactive-libraries" class="nav-item" data-module="sp-inactive-libraries">
+                                <span class="icon">📚</span>
+                                <span>SP Stale Libraries & Files</span>
+                            </a>
+                        </div>
 
-                <!-- CATEGORY: MAILFLOW -->
-                <div class="nav-category">
-                    <div class="nav-category-header nav-item" data-module="mailflow-overview">
-                        <span class="icon">🔄</span>
-                        <span class="category-title">Mailflow</span>
-                        <span class="arrow-icon">❯</span>
-                    </div>
-                    <div class="nav-subitems">
-                        <a href="#mailflow-volume" class="nav-item" data-module="mailflow-volume">
-                            <span class="icon">📈</span> Email Volume (Sent/Received)
-                        </a>
-                        <a href="#mailflow-connectors" class="nav-item" data-module="mailflow-connectors">
-                            <span class="icon">🔌</span> Connectors Summary
-                        </a>
-                        <a href="#mailflow-transport-rules" class="nav-item" data-module="mailflow-transport-rules">
-                            <span class="icon">⚙️</span> Transport Rule Summary
-                        </a>
-                        <a href="#mailflow-autoforward" class="nav-item" data-module="mailflow-autoforward">
-                            <span class="icon">🔀</span> Auto-Forwarding Details
-                        </a>
-                    </div>
-                </div>
+                        <!-- SUB-GROUP: AZURE AD -->
+                        <div class="nav-group-label" style="color: #d97706;">
+                            <div>
+                                <span style="width: 16px; text-align: center; flex-shrink: 0;">🔑</span>
+                                <span>Azure AD</span>
+                            </div>
+                            <span class="sub-arrow" style="font-size: 0.65rem; transition: transform 0.2s ease;">▼</span>
+                        </div>
+                        <div class="nav-subgroup-block">
+                            <a href="#azure-ad-inactive" class="nav-item" data-module="azure-ad-inactive">
+                                <span class="icon">💤</span>
+                                <span>Inactive & Disabled Users</span>
+                            </a>
+                            <a href="#azure-ad-licenses" class="nav-item" data-module="azure-ad-licenses">
+                                <span class="icon">💳</span>
+                                <span>Licenses Summary</span>
+                            </a>
+                            <a href="#security-risky-users" class="nav-item" data-module="security-risky-users">
+                                <span class="icon">🚨</span>
+                                <span>Azure Risky Users Report</span>
+                            </a>
+                        </div>
 
-                <!-- CATEGORY: COLLABORATION -->
-                <div class="nav-category">
-                    <div class="nav-category-header nav-item" data-module="collaboration-overview">
-                        <span class="icon">🤝</span>
-                        <span class="category-title">Collaboration</span>
-                        <span class="arrow-icon">❯</span>
-                    </div>
-                    <div class="nav-subitems">
-                        <a href="#teams-call-quality" class="nav-item" data-module="teams-call-quality">
-                            <span class="icon">📞</span> Teams Call Quality Report
-                        </a>
-                        <a href="#sp-onedrive-trend" class="nav-item" data-module="sp-onedrive-trend">
-                            <span class="icon">📊</span> SharePoint & OneDrive Trend (60d)
-                        </a>
-                        <a href="#external-sharing-audit" class="nav-item" data-module="external-sharing-audit">
-                            <span class="icon">🔒</span> External Sharing & DLP Audit
-                        </a>
-                        <a href="#inactive-files" class="nav-item" data-module="inactive-files">
-                            <span class="icon">📁</span> Inactive Files & Libraries
-                        </a>
-                        <a href="#file-type-data" class="nav-item" data-module="file-type-data">
-                            <span class="icon">📄</span> File Type Data & URLs
-                        </a>
-                        <a href="#sp-inactive-files" class="nav-item" data-module="sp-inactive-files">
-                            <span class="icon">🗂️</span> SP File-Wise Inactive Report
-                        </a>
-                        <a href="#sp-inactive-libraries" class="nav-item" data-module="sp-inactive-libraries">
-                            <span class="icon">📚</span> SP Library-Level Inactive Report
-                        </a>
-                    </div>
-                </div>
-
-                <!-- CATEGORY: AUDITING -->
-                <div class="nav-category">
-                    <div class="nav-category-header nav-item" data-module="auditing-overview">
-                        <span class="icon">📝</span>
-                        <span class="category-title">Auditing</span>
-                        <span class="arrow-icon">❯</span>
-                    </div>
-                    <div class="nav-subitems">
-                        <a href="#app-audit-log" class="nav-item" data-module="app-audit-log">
-                            <span class="icon">📋</span> App Action Audit Log
-                        </a>
-                    </div>
-                </div>
-
-                <!-- CATEGORY: SECURITY -->
-                <div class="nav-category">
-                    <div class="nav-category-header nav-item" data-module="security-overview">
-                        <span class="icon">🛡️</span>
-                        <span class="category-title">Security</span>
-                        <span class="arrow-icon">❯</span>
-                    </div>
-                    <div class="nav-subitems">
-                        <a href="#security-risky-users" class="nav-item" data-module="security-risky-users">
-                            <span class="icon">🚨</span> Azure Risky Users Summary
-                        </a>
+                        <!-- SUB-GROUP: INTUNE -->
+                        <div class="nav-group-label" style="color: #dc2626;">
+                            <div>
+                                <span style="width: 16px; text-align: center; flex-shrink: 0;">🛡️</span>
+                                <span>Intune</span>
+                            </div>
+                            <span class="sub-arrow" style="font-size: 0.65rem; transition: transform 0.2s ease;">▼</span>
+                        </div>
+                        <div class="nav-subgroup-block">
+                            <a href="#intune-vulnerabilities" class="nav-item" data-module="intune-vulnerabilities">
+                                <span class="icon">🛡️</span>
+                                <span>Intune Vulnerability Report</span>
+                            </a>
+                            <a href="#failed-updates" class="nav-item" data-module="failed-updates">
+                                <span class="icon">⚠️</span>
+                                <span>Failed Updates Report</span>
+                            </a>
+                        </div>
                     </div>
                 </div>
 
                 <!-- CATEGORY: MANAGEMENT -->
                 <div class="nav-category">
-                    <div class="nav-category-header nav-item" data-module="management-overview">
-                        <span class="icon">⚙️</span>
-                        <span class="category-title">Management</span>
+                    <div class="nav-category-header">
+                        <div>
+                            <span class="icon">⚙️</span>
+                            <span class="category-title">Management</span>
+                        </div>
                         <span class="arrow-icon">❯</span>
                     </div>
                     <div class="nav-subitems">
+                        <a href="#mgmt-room-mailboxes" class="nav-item" data-module="mgmt-room-mailboxes">
+                            <span class="icon">🏢</span>
+                            <span>Room Mailbox Module & Booking Settings</span>
+                        </a>
                         <a href="#mgmt-distribution-groups" class="nav-item" data-module="mgmt-distribution-groups">
-                            <span class="icon">👥</span> Distribution Group Module
+                            <span class="icon">👥</span>
+                            <span>Distribution Group Module</span>
                         </a>
                         <a href="#mgmt-mailboxes" class="nav-item" data-module="mgmt-mailboxes">
-                            <span class="icon">📬</span> Mailbox Module
+                            <span class="icon">📬</span>
+                            <span>Mailbox Module</span>
                         </a>
                         <a href="#mgmt-shared-mailboxes" class="nav-item" data-module="mgmt-shared-mailboxes">
-                            <span class="icon">🤝</span> Shared Mailbox Management
-                        </a>
-                        <a href="#mgmt-room-mailboxes" class="nav-item" data-module="mgmt-room-mailboxes">
-                            <span class="icon">🏢</span> Room Mailbox Module
+                            <span class="icon">🤝</span>
+                            <span>Shared Mailbox Management</span>
                         </a>
                         <a href="#mgmt-inbox-rules" class="nav-item" data-module="mgmt-inbox-rules">
-                            <span class="icon">⚡</span> Exchange Inbox Rule Management
+                            <span class="icon">⚡</span>
+                            <span>Exchange Inbox Rule Management</span>
                         </a>
                     </div>
                 </div>
 
                 <!-- CATEGORY: AI & SYSTEM INTEGRATIONS -->
                 <div class="nav-category">
-                    <div class="nav-category-header nav-item active" data-module="ai-governance">
-                        <span class="icon">🤖</span>
-                        <span class="category-title">AI & System Integrations</span>
+                    <div class="nav-category-header">
+                        <div>
+                            <span class="icon">🤖</span>
+                            <span class="category-title">AI & System Integrations</span>
+                        </div>
                         <span class="arrow-icon">❯</span>
                     </div>
                     <div class="nav-subitems">
                         <a href="#ai-governance" class="nav-item active" data-module="ai-governance">
-                            <span class="icon">💡</span> All AI Recommendations
+                            <span class="icon">💡</span>
+                            <span>All AI Recommendations</span>
                         </a>
 
                         <!-- COST SAVING GOVERNANCE GROUP -->
-                        <div class="nav-group-label" style="font-size: 0.7rem; font-weight: 700; color: var(--accent-green, #10b981); text-transform: uppercase; padding: 6px 12px 2px 12px; letter-spacing: 0.5px;">💰 Cost Saving Governance</div>
-                        <a href="#ai-governance-cost-license" class="nav-item" data-module="ai-governance-cost-license" style="padding-left: 1.8rem;">
-                            <span class="icon">💳</span> License Cost Saving
+                        <div class="nav-group-label" style="color: #059669;">💰 Cost Saving Governance</div>
+                        <a href="#ai-governance-cost-license" class="nav-item" data-module="ai-governance-cost-license">
+                            <span class="icon">💳</span>
+                            <span>License Cost Saving</span>
                         </a>
-                        <a href="#ai-governance-cost-sharepoint" class="nav-item" data-module="ai-governance-cost-sharepoint" style="padding-left: 1.8rem;">
-                            <span class="icon">📊</span> SharePoint Cost Saving
+                        <a href="#ai-governance-cost-sharepoint" class="nav-item" data-module="ai-governance-cost-sharepoint">
+                            <span class="icon">📊</span>
+                            <span>SharePoint Cost Saving</span>
                         </a>
-                        <a href="#ai-governance-cost-onedrive" class="nav-item" data-module="ai-governance-cost-onedrive" style="padding-left: 1.8rem;">
-                            <span class="icon">📁</span> OneDrive Cost Saving
+                        <a href="#ai-governance-cost-onedrive" class="nav-item" data-module="ai-governance-cost-onedrive">
+                            <span class="icon">📁</span>
+                            <span>OneDrive Cost Saving</span>
                         </a>
-                        <a href="#ai-governance-cost" class="nav-item" data-module="ai-governance-cost" style="padding-left: 1.8rem; opacity: 0.9;">
-                            <span class="icon">💰</span> All Cost Savings Overview
+                        <a href="#ai-governance-cost" class="nav-item" data-module="ai-governance-cost">
+                            <span class="icon">💰</span>
+                            <span>All Cost Savings Overview</span>
                         </a>
 
                         <!-- SECURITY GOVERNANCE GROUP -->
-                        <div class="nav-group-label" style="font-size: 0.7rem; font-weight: 700; color: var(--accent-blue, #3b82f6); text-transform: uppercase; padding: 8px 12px 2px 12px; letter-spacing: 0.5px;">🔒 Security Governance</div>
-                        <a href="#ai-governance-security" class="nav-item" data-module="ai-governance-security" style="padding-left: 1.8rem;">
-                            <span class="icon">🔒</span> Security Governance
+                        <div class="nav-group-label" style="color: #2563eb;">🔒 Security Governance</div>
+                        <a href="#ai-governance-security" class="nav-item" data-module="ai-governance-security">
+                            <span class="icon">🔒</span>
+                            <span>Security Governance</span>
                         </a>
 
                         <!-- COMPLIANCE GOVERNANCE GROUP -->
-                        <div class="nav-group-label" style="font-size: 0.7rem; font-weight: 700; color: #a78bfa; text-transform: uppercase; padding: 8px 12px 2px 12px; letter-spacing: 0.5px;">🛡️ Compliance Governance</div>
-                        <a href="#legal-hold" class="nav-item" data-module="legal-hold" style="padding-left: 1.8rem;">
-                            <span class="icon">⚖️</span> Legal Hold & Purview Cases
+                        <div class="nav-group-label" style="color: #7c3aed;">🛡️ Compliance Governance</div>
+                        <a href="#legal-hold" class="nav-item" data-module="legal-hold">
+                            <span class="icon">⚖️</span>
+                            <span>Legal Hold & Purview Cases</span>
                         </a>
-                        <a href="#ai-governance-compliance" class="nav-item" data-module="ai-governance-compliance" style="padding-left: 1.8rem;">
-                            <span class="icon">🛡️</span> Compliance Governance Overview
+                        <a href="#ai-governance-compliance" class="nav-item" data-module="ai-governance-compliance">
+                            <span class="icon">🛡️</span>
+                            <span>Compliance Governance Overview</span>
                         </a>
-
                     </div>
                 </div>
 
                 <!-- CATEGORY: PLATFORM & TOOLS -->
                 <div class="nav-category">
                     <div class="nav-category-header">
-                        <span class="icon">⚙️</span>
-                        <span class="category-title">Platform & Tools</span>
+                        <div>
+                            <span class="icon">⚙️</span>
+                            <span class="category-title">Platform & Tools</span>
+                        </div>
                         <span class="arrow-icon">❯</span>
                     </div>
                     <div class="nav-subitems">
                         <a href="#request-creation" class="nav-item" data-module="request-creation">
-                            <span class="icon">📝</span> Create Request
+                            <span class="icon">📝</span>
+                            <span>Create Request</span>
                         </a>
                         <a href="#request-dashboard" class="nav-item" data-module="request-dashboard">
-                            <span class="icon">📊</span> Request Dashboard & Assignments
+                            <span class="icon">📊</span>
+                            <span>Request Dashboard & Assignments</span>
                         </a>
                         <a href="#policy-dashboard" class="nav-item" data-module="policy-dashboard">
-                            <span class="icon">📜</span> Policy Dashboard & Conditions
+                            <span class="icon">📜</span>
+                            <span>Policy Dashboard & Conditions</span>
                         </a>
                         <a href="#teams-integration" class="nav-item" data-module="teams-integration">
-                            <span class="icon">💬</span> Teams Bot & Daily Digest
+                            <span class="icon">💬</span>
+                            <span>Teams Bot & Daily Digest</span>
                         </a>
                         <a href="#outages" class="nav-item" data-module="outages">
-                            <span class="icon">🌐</span> M365 Service Outage Map
+                            <span class="icon">🌐</span>
+                            <span>M365 Service Outage Map</span>
                         </a>
                         <a href="#settings" class="nav-item" data-module="settings">
-                            <span class="icon">⚙️</span> Settings & Configuration
+                            <span class="icon">⚙️</span>
+                            <span>Settings & Configuration</span>
                         </a>
                         <a href="#api-permissions-audit" class="nav-item" data-module="api-permissions-audit">
-                            <span class="icon">🔑</span> API Scope & Permissions Audit
+                            <span class="icon">🔑</span>
+                            <span>API Scope & Permissions Audit</span>
                         </a>
                     </div>
                 </div>
             </nav>
 
-            <div class="sidebar-footer" style="display: flex; flex-direction: column; gap: 8px;">
-                <button class="btn btn-primary btn-block" id="btn-open-api-hub">🌐 API Integration Hub & LLM Auto-Switch</button>
-                <button class="btn btn-secondary btn-block" id="btn-open-teams-config">💬 Teams & Phase Config</button>
-            </div>
+
         </aside>
 
         <!-- Main Content Area -->
         <main class="main-wrapper">
             <!-- M365 Admin Action Ribbon -->
             <div class="m365-action-ribbon">
-                <div class="ribbon-left">
+                <div class="ribbon-left" style="display: flex; align-items: center; gap: 12px;">
                     <label class="m365-toggle-switch" title="Toggle Theme (Glassmorphic Dark Mode vs Classic Light Mode)">
                         <input type="checkbox" id="m365-theme-toggle" checked />
                         <span class="toggle-slider"></span>
                     </label>
                     <span class="toggle-label">Try the new dashboard</span>
+                    <span style="background: rgba(99, 102, 241, 0.2); border: 1px solid rgba(99, 102, 241, 0.4); color: #c7d2fe; font-size: 0.78rem; font-weight: 600; padding: 3px 10px; border-radius: 20px; display: inline-flex; align-items: center; gap: 5px;">
+                        📊 Mode: Report &amp; Recommendations First (Automated Agent Actions Deferred)
+                    </span>
                 </div>
                 <div class="ribbon-actions">
                     <div class="dropdown-pill-wrapper" style="position: relative; display: inline-block;">
@@ -376,6 +383,15 @@
                     <p id="page-subtitle">Centralized intelligence, license cost optimization, and security insights.</p>
                 </div>
                 <div class="header-right" style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
+                    <div style="display: flex; align-items: center; gap: 6px; background: rgba(0,0,0,0.04); padding: 4px 8px; border-radius: 6px; border: 1px solid var(--border-color);">
+                        <span style="font-size: 0.78rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">🏢 Tenant:</span>
+                        <select id="m365-tenant-selector" style="padding: 3px 8px; font-size: 0.82rem; font-weight: 600; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-primary); cursor: pointer;">
+                            <option value="contoso.com">Contoso Corporation (contoso.com)</option>
+                            <option value="fabrikam.com">Fabrikam Inc (fabrikam.com)</option>
+                            <option value="litware.com">Litware Ltd (litware.com)</option>
+                        </select>
+                        <button class="btn btn-secondary" id="btn-add-tenant-modal" style="padding: 3px 8px; font-size: 0.78rem; font-weight: 600; height: auto;" title="Register new M365 Tenant using Client ID / Tenant ID">🔒 + Add Tenant</button>
+                    </div>
                     <div class="sync-info-tab" id="sync-status-tab" title="SQL Database & Dashboard Telemetry Sync Status">
                         <div class="sync-info-content">
                             <div class="sync-row">
@@ -655,8 +671,14 @@
                         <input type="url" id="teams-webhook-url" class="form-control" placeholder="https://outlook.office.com/webhook/..." required>
                     </div>
                     <div class="form-group">
-                        <label>Teams Channel Name</label>
-                        <input type="text" id="teams-channel-name" class="form-control" value="General Admin Channel">
+                        <label>Teams Channel Name (Auto Select via API)</label>
+                        <div style="display: flex; gap: 8px; margin-bottom: 6px;">
+                            <select id="teams-channel-name-select" class="form-control" style="flex: 1;">
+                                <option value="General Admin Channel">General Admin Channel (Default)</option>
+                            </select>
+                            <button type="button" class="btn btn-secondary btn-sm" id="btn-fetch-teams-channels" style="white-space: nowrap;">🔄 Auto-Fetch Channels</button>
+                        </div>
+                        <input type="text" id="teams-channel-name" class="form-control" value="General Admin Channel" placeholder="Selected Channel Name">
                     </div>
                     <div class="form-group" style="display: flex; align-items: center; gap: 10px;">
                         <input type="checkbox" id="teams-daily-digest-enabled" checked style="width: auto;">
@@ -735,7 +757,7 @@
                         <input type="checkbox" id="reset-revoke-sessions" checked style="width: auto;" />
                         <label for="reset-revoke-sessions" style="margin: 0;">Revoke all active refresh tokens & sign-in sessions</label>
                     </div>
-                    <button type="submit" class="btn btn-primary btn-block">⚡ Execute Instant Password Reset</button>
+                    <button type="submit" class="btn btn-secondary btn-block">📋 Generate Credential Audit Report</button>
                 </form>
             </div>
         </div>
@@ -891,17 +913,6 @@
                     </div>
                 </div>
                 <button class="btn btn-secondary btn-block" style="margin-top: 15px;" onclick="window.closeModal('modal-notifications'); loadModule('policy-dashboard');">📜 Open Policy Dashboard</button>
-            </div>
-        </div>
-    <!-- Intune Affected Devices Modal Overlay -->
-    <div class="modal-overlay" id="modal-intune-device-details" style="display: none;">
-        <div class="modal-card modal-card-wide" style="max-width: 950px; width: 95%;">
-            <div class="modal-header" style="background: linear-gradient(135deg, #0f172a, #1e293b); border-bottom: 1px solid rgba(255,255,255,0.1);">
-                <h3 id="modal-intune-cve-title" style="margin: 0; color: #38bdf8;">💻 Affected Machine Names & Device Details</h3>
-                <button class="modal-close" style="color: white;" onclick="window.closeModal('modal-intune-device-details')">&times;</button>
-            </div>
-            <div class="modal-body" id="modal-intune-devices-content" style="padding: 1.5rem;">
-                <div style="padding: 2rem; text-align: center;">⚡ Fetching machine details...</div>
             </div>
         </div>
     </div>
@@ -1219,8 +1230,47 @@
                         <span style="font-size: 0.75rem; color: #004578;">Matched items (emails, OneDrive docs, SharePoint files) will be copied to this destination OneDrive or SharePoint URL automatically.</span>
                     </div>
 
-                    <button type="submit" class="btn btn-primary btn-block" style="padding: 10px; font-size: 0.95rem;">🔍 Run Compliance Search & Copy Data to Vault</button>
+                    <button type="submit" class="btn btn-primary btn-block" style="padding: 10px; font-size: 0.95rem;">📋 Generate Purview Compliance Report</button>
                 </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Intune Affected Machines Inventory Modal -->
+    <div class="modal-overlay" id="modal-intune-device-details" style="display: none;" onclick="if(event.target === this) window.closeModal('modal-intune-device-details')">
+        <div class="modal-card modal-card-wide" style="max-width: 1000px; width: 95%;">
+            <div class="modal-header" style="background: rgba(15, 23, 42, 0.95); border-bottom: 1px solid rgba(255, 255, 255, 0.1);">
+                <h3 id="modal-intune-cve-title">💻 Machine Inventory for CVE</h3>
+                <button class="modal-close" onclick="window.closeModal('modal-intune-device-details')">&times;</button>
+            </div>
+            <div class="modal-body" id="modal-intune-devices-content" style="max-height: 80vh; overflow-y: auto;">
+                <div style="padding: 2rem; text-align: center;">⚡ Fetching enrolled Intune device telemetry...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Retention Policy Assigned Mailboxes Inventory Modal -->
+    <div class="modal-overlay" id="modal-retention-mailbox-details" style="display: none;" onclick="if(event.target === this) window.closeModal('modal-retention-mailbox-details')">
+        <div class="modal-card modal-card-wide" style="max-width: 1050px; width: 95%;">
+            <div class="modal-header" style="background: rgba(15, 23, 42, 0.95); border-bottom: 1px solid rgba(255, 255, 255, 0.1);">
+                <h3 id="modal-retention-title">📅 Assigned Mailboxes Inventory</h3>
+                <button class="modal-close" onclick="window.closeModal('modal-retention-mailbox-details')">&times;</button>
+            </div>
+            <div class="modal-body" id="modal-retention-mailboxes-content" style="max-height: 80vh; overflow-y: auto;">
+                <div style="padding: 2rem; text-align: center;">⚡ Loading assigned retention policy mailbox telemetry...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Distribution Group Members Inventory Modal -->
+    <div class="modal-overlay" id="modal-dl-members-details" style="display: none;" onclick="if(event.target === this) window.closeModal('modal-dl-members-details')">
+        <div class="modal-card modal-card-wide" style="max-width: 950px; width: 95%;">
+            <div class="modal-header" style="background: rgba(15, 23, 42, 0.95); border-bottom: 1px solid rgba(255, 255, 255, 0.1);">
+                <h3 id="modal-dl-title">👥 Distribution Group Member Roster</h3>
+                <button class="modal-close" onclick="window.closeModal('modal-dl-members-details')">&times;</button>
+            </div>
+            <div class="modal-body" id="modal-dl-members-content" style="max-height: 80vh; overflow-y: auto;">
+                <div style="padding: 2rem; text-align: center;">⚡ Loading group member telemetry...</div>
             </div>
         </div>
     </div>
@@ -1238,6 +1288,233 @@
         </div>
     </div>
 
-    <script src="/static/js/app.js?v=2.0.1"></script>
+    <!-- Policy Edit Modal -->
+    <div class="modal-overlay" id="modal-edit-policy" style="display: none;">
+        <div class="modal-card modal-card-wide" style="max-width: 850px; width: 92%;">
+            <div class="modal-header">
+                <h3>✏️ Edit Governance & Security Policy</h3>
+                <button class="modal-close" id="btn-close-modal-edit-policy" onclick="window.closeModal('modal-edit-policy')">&times;</button>
+            </div>
+            <div class="modal-body" style="max-height: 80vh; overflow-y: auto;">
+                <form id="form-edit-policy">
+                    <input type="hidden" id="pol-edit-id" />
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 12px;">
+                        <div class="form-group">
+                            <label style="font-weight: 600;">Policy Category</label>
+                            <select id="pol-edit-category" class="form-control" required>
+                                <option value="LICENSE_AUTOMATION">💳 License Automation</option>
+                                <option value="SHAREPOINT_CLEANUP">📁 SharePoint Cleanup & Move</option>
+                                <option value="COMPLIANCE_SECURITY">🛡️ Compliance & Security</option>
+                                <option value="AI_GOVERNANCE">🤖 AI Governance</option>
+                                <option value="AUDITING">📋 Auditing</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label style="font-weight: 600;">Policy Type</label>
+                            <input type="text" id="pol-edit-type" class="form-control" required />
+                        </div>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 15px; margin-bottom: 12px;">
+                        <div class="form-group">
+                            <label style="font-weight: 600;">Policy Name</label>
+                            <input type="text" id="pol-edit-name" class="form-control" required />
+                        </div>
+                        <div class="form-group">
+                            <label style="font-weight: 600;">Governance Phase Level</label>
+                            <select id="pol-edit-phase" class="form-control">
+                                <option value="PHASE_1_REPORTING">Phase 1: Reporting Only</option>
+                                <option value="PHASE_2_SEMI_AUTOMATED">Phase 2: Semi-Automated (Approval)</option>
+                                <option value="PHASE_3_FULLY_AUTOMATED">Phase 3: Fully Automated</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: 15px;">
+                        <label style="font-weight: 600;">Description</label>
+                        <input type="text" id="pol-edit-desc" class="form-control" />
+                    </div>
+
+                    <div style="background: #F8F9FA; padding: 1rem; border-radius: 6px; border: 1px solid #EDEBE9; margin-bottom: 15px;">
+                        <h4 style="margin: 0 0 10px 0; color: #0078D4; font-size: 0.95rem;">⚙️ Filtering Criteria & Action Parameters (JSON)</h4>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                            <div>
+                                <label style="font-size: 0.78rem; font-weight: 600;">Criteria JSON</label>
+                                <textarea id="pol-edit-criteria" class="form-control" rows="5" style="font-family: monospace; font-size: 0.8rem;"></textarea>
+                            </div>
+                            <div>
+                                <label style="font-size: 0.78rem; font-weight: 600;">Action Config JSON</label>
+                                <textarea id="pol-edit-action" class="form-control" rows="5" style="font-family: monospace; font-size: 0.8rem;"></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="background: #EFF6FC; padding: 1rem; border-radius: 6px; border: 1px solid #0078D4; margin-bottom: 15px;">
+                        <h4 style="margin: 0 0 10px 0; color: #0078D4; font-size: 0.95rem;">🚨 Alerting & Daily Digest Settings</h4>
+                        
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 10px;">
+                            <div style="background: #FFFFFF; padding: 10px; border-radius: 4px; border: 1px solid #C7E0F4;">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                                    <strong style="font-size: 0.85rem;">📧 Email Finding Alerts</strong>
+                                    <input type="checkbox" id="pol-edit-alert-email-toggle" style="width:auto;" />
+                                </div>
+                                <input type="text" id="pol-edit-alert-email-recipients" class="form-control" style="font-size: 0.8rem; height: 30px;" />
+                            </div>
+
+                            <div style="background: #FFFFFF; padding: 10px; border-radius: 4px; border: 1px solid #C7E0F4;">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                                    <strong style="font-size: 0.85rem;">💬 Teams Chat Finding Alerts</strong>
+                                    <input type="checkbox" id="pol-edit-alert-teams-toggle" style="width:auto;" />
+                                </div>
+                                <input type="url" id="pol-edit-alert-teams-webhook" class="form-control" style="font-size: 0.8rem; height: 30px;" />
+                            </div>
+                        </div>
+
+                        <div style="display: flex; gap: 20px; font-size: 0.85rem; color: #004578;">
+                            <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
+                                <input type="checkbox" id="pol-edit-daily-summary-email" style="width:auto;" />
+                                Include in Daily Email Digest
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
+                                <input type="checkbox" id="pol-edit-daily-summary-teams" style="width:auto;" />
+                                Include in Daily Teams Digest
+                            </label>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary btn-block" style="padding: 10px; font-size: 0.95rem;">💾 Save Policy Changes</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Room Mailbox Booking Settings Modal -->
+    <div class="modal-overlay" id="modal-room-booking-settings" style="display: none;" onclick="if(event.target === this) window.closeModal('modal-room-booking-settings')">
+        <div class="modal-card" style="max-width: 650px; width: 90%;">
+            <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center;">
+                <h3 id="room-settings-title">⚙️ Room Calendar Booking Options & Settings</h3>
+                <button class="modal-close" onclick="window.closeModal('modal-room-booking-settings')">&times;</button>
+            </div>
+            <div class="modal-body" style="padding: 1rem;">
+                <form id="form-room-booking-settings">
+                    <input type="hidden" id="room-settings-mailbox-id" />
+                    
+                    <div style="background: rgba(15, 23, 42, 0.6); padding: 1rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); margin-bottom: 1rem;">
+                        <h4 style="margin: 0 0 10px 0; color: #38bdf8;">📅 Booking Processing Mode</h4>
+                        <div style="display: flex; flex-direction: column; gap: 8px;">
+                            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; color: #f1f5f9;">
+                                <input type="radio" name="room-booking-mode" value="AutoAccept" id="room-mode-auto" checked />
+                                <span><strong>AutoAccept</strong> — Automatically process and accept meeting requests matching criteria</span>
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; color: #f1f5f9;">
+                                <input type="radio" name="room-booking-mode" value="DelegateApproval" id="room-mode-delegate" />
+                                <span><strong>DelegateApproval</strong> — Require explicit approval by room delegates</span>
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; color: #f1f5f9;">
+                                <input type="radio" name="room-booking-mode" value="Disabled" id="room-mode-disabled" />
+                                <span><strong>Disabled</strong> — Disable new calendar bookings for this room</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 1rem;">
+                        <div style="background: rgba(15, 23, 42, 0.4); padding: 10px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.08);">
+                            <label style="display: flex; align-items: center; justify-content: space-between; cursor: pointer; color: #f1f5f9; font-weight: 600; font-size: 0.85rem;">
+                                <span>Allow Recurring Meetings</span>
+                                <input type="checkbox" id="room-allow-recurring" checked style="width: auto;" />
+                            </label>
+                        </div>
+                        <div style="background: rgba(15, 23, 42, 0.4); padding: 10px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.08);">
+                            <label style="display: flex; align-items: center; justify-content: space-between; cursor: pointer; color: #f1f5f9; font-weight: 600; font-size: 0.85rem;">
+                                <span>Allow Conflicts</span>
+                                <input type="checkbox" id="room-allow-conflicts" style="width: auto;" />
+                            </label>
+                        </div>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 1rem;">
+                        <div>
+                            <label style="font-size: 0.8rem; color: #cbd5e1; font-weight: 600;">Max Booking Duration (Hours):</label>
+                            <input type="number" id="room-max-duration" class="form-control" value="8" min="1" max="24" style="height: 36px; font-size: 0.85rem;" />
+                        </div>
+                        <div>
+                            <label style="font-size: 0.8rem; color: #cbd5e1; font-weight: 600;">Booking Window (Days Ahead):</label>
+                            <input type="number" id="room-booking-window" class="form-control" value="180" min="1" max="365" style="height: 36px; font-size: 0.85rem;" />
+                        </div>
+                    </div>
+
+                    <div style="margin-bottom: 1.2rem;">
+                        <label style="font-size: 0.8rem; color: #cbd5e1; font-weight: 600;">Delegates / Book-In-Policy Users (Comma Separated Emails):</label>
+                        <input type="text" id="room-delegates" class="form-control" placeholder="e.g. facility.manager@contoso.com, admin@contoso.com" style="height: 36px; font-size: 0.85rem;" />
+                    </div>
+
+                    <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                        <button type="button" class="btn btn-secondary" onclick="window.closeModal('modal-room-booking-settings')">Cancel</button>
+                        <button type="submit" class="btn btn-primary">💾 Save Room Settings</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Itemized Individual Items Inspector Modal -->
+    <div class="modal-overlay" id="modal-itemized-inspector" style="display: none;" onclick="if(event.target === this) window.closeModal('modal-itemized-inspector')">
+        <div class="modal-card modal-card-wide" style="max-width: 1100px; width: 95%;">
+            <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center;">
+                <h3 id="itemized-modal-title">📋 Individual Items Inspector</h3>
+                <button class="modal-close" onclick="window.closeModal('modal-itemized-inspector')">&times;</button>
+            </div>
+            <div class="modal-body" id="itemized-modal-body" style="max-height: 80vh; overflow-y: auto; padding: 1rem;">
+                <!-- Dynamically populated with interactive table -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Secured M365 Tenant Modal -->
+    <div class="modal-overlay" id="add-tenant-modal" style="display: none;" onclick="if(event.target === this) window.closeModal('add-tenant-modal')">
+        <div class="modal-card">
+            <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <h3 style="margin: 0; font-size: 1.1rem; color: var(--text-primary);">🔒 Register Secured M365 Tenant</h3>
+                    <p style="font-size: 0.8rem; color: var(--text-secondary); margin: 2px 0 0 0;">Register new M365 tenant using App Registration Client ID / Tenant ID</p>
+                </div>
+                <button class="modal-close" onclick="window.closeModal('add-tenant-modal')">&times;</button>
+            </div>
+            <div class="modal-body" style="padding: 1.2rem;">
+                <form id="form-register-tenant">
+                    <div style="margin-bottom: 12px;">
+                        <label style="font-size: 0.82rem; font-weight: 600; display: block; margin-bottom: 4px; color: var(--text-primary);">Primary Domain / Tenant ID *</label>
+                        <input type="text" id="tenant-id-input" class="form-control" placeholder="e.g. contoso.com or 72f988bf-86f1-41af-91ab-2d7cd011db47" style="height: 36px;" required />
+                    </div>
+                    <div style="margin-bottom: 12px;">
+                        <label style="font-size: 0.82rem; font-weight: 600; display: block; margin-bottom: 4px; color: var(--text-primary);">Tenant / Organization Display Name *</label>
+                        <input type="text" id="tenant-name-input" class="form-control" placeholder="e.g. Contoso Corporation" style="height: 36px;" required />
+                    </div>
+                    <div style="margin-bottom: 12px;">
+                        <label style="font-size: 0.82rem; font-weight: 600; display: block; margin-bottom: 4px; color: var(--text-primary);">App Registration Client ID (Application ID)</label>
+                        <input type="text" id="tenant-client-id-input" class="form-control" placeholder="e.g. 11111111-2222-3333-4444-555555555555" style="height: 36px;" />
+                    </div>
+                    <div style="margin-bottom: 12px;">
+                        <label style="font-size: 0.82rem; font-weight: 600; display: block; margin-bottom: 4px; color: var(--text-primary);">Client Secret / Cert Thumbprint (Encrypted)</label>
+                        <input type="password" id="tenant-client-secret-input" class="form-control" placeholder="••••••••••••••••" style="height: 36px;" />
+                    </div>
+                    <div style="margin-bottom: 16px;">
+                        <label style="font-size: 0.82rem; font-weight: 600; display: block; margin-bottom: 4px; color: var(--text-primary);">Authentication Mechanism</label>
+                        <select id="tenant-auth-type-select" class="form-control" style="height: 36px;">
+                            <option value="client_secret">Client Secret (Application Permission Graph / Exchange Online)</option>
+                            <option value="certificate">X.509 Certificate Thumbprint (High Security)</option>
+                            <option value="sso_oauth">OAuth2 SSO / Delegated Admin (GDAP / CSP Partner)</option>
+                        </select>
+                    </div>
+                    <div style="display: flex; gap: 8px; justify-content: flex-end;">
+                        <button type="button" class="btn btn-secondary" onclick="window.closeModal('add-tenant-modal')">Cancel</button>
+                        <button type="submit" class="btn btn-primary">🔒 Save & Register Tenant</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/js/app.js?v=2.0.2"></script>
 </body>
 </html>

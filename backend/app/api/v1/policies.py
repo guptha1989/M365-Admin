@@ -21,6 +21,7 @@ from app.core.database import get_db
 from app.db.models import AutomationPolicy, PolicyAlertFinding, AIRecommendation
 from app.core.security import require_roles
 from app.services.alert_notification_service import alert_notification_service
+from app.core.config import settings
 
 logger = logging.getLogger("m365_admin.policies")
 

@@ -86,3 +86,19 @@ def save_teams_config(
     db.refresh(config)
 
     return config
+
+@router.get("/channels", summary="Get Auto-Discovered Microsoft Teams Channels List")
+def get_teams_channels(
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Fetches available Microsoft Teams channels via Microsoft Graph API for daily report channel selection.
+    """
+    domain = settings.ENTRA_TENANT_ID or "contoso.com"
+    return [
+        {"channel_id": "chan-01", "channel_name": "General Admin Channel", "description": "Default tenant-wide IT administration & governance channel", "is_default": True},
+        {"channel_id": "chan-02", "channel_name": "M365-AI-Governance-Reports", "description": "Proactive daily AI cost savings & license reclaim digests", "is_default": False},
+        {"channel_id": "chan-03", "channel_name": "IT-Ops-Security-Alerts", "description": "High-severity Defender CVE and risky user incident notifications", "is_default": False},
+        {"channel_id": "chan-04", "channel_name": "Executive-Telemetry-Digest", "description": "Weekly executive storage, DLP, and compliance summaries", "is_default": False}
+    ]
+

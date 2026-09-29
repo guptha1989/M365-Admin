@@ -100,7 +100,7 @@ def export_sharepoint_inactive_libraries_excel(
     libraries = data.get("libraries", [])
     
     output = io.StringIO()
-    fieldnames = ["siteName", "libraryName", "url", "totalFiles", "inactiveFilesCount", "totalSizeGB", "lastAccessedDaysAgo", "lastAccessedDate", "storageReclaimPotentialGB", "annualCostSavingsUSD", "sensitivityLevel", "primaryOwner"]
+    fieldnames = ["siteName", "libraryName", "primaryOwner", "siteMembersCount", "siteMembersSummary", "url", "totalFiles", "inactiveFilesCount", "totalSizeGB", "lastAccessedDaysAgo", "lastAccessedDate", "storageReclaimPotentialGB", "annualCostSavingsUSD", "sensitivityLevel"]
     writer = csv.DictWriter(output, fieldnames=fieldnames)
     writer.writeheader()
     for lib in libraries:

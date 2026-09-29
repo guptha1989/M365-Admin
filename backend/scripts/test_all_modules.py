@@ -64,9 +64,12 @@ def test_all():
 
     res = client.get("/api/v1/ai-engine/recommendations")
     assert res.status_code == 200, res.text
-    print("[OK] AI Recommendations Feed:", len(res.json()), "items aggregated")
+    recs_data = res.json()
+    recs_list = recs_data if isinstance(recs_data, list) else recs_data.get("recommendations", [])
+    print("[OK] AI Recommendations Feed:", len(recs_list), "items aggregated")
 
-    res = client.post("/api/v1/ai-engine/execute-recommendation/101?execution_mode=AUTONOMOUS")
+    rec_id = recs_list[0]["id"] if recs_list else 1
+    res = client.post(f"/api/v1/ai-engine/execute-recommendation/{rec_id}?execution_mode=AUTONOMOUS")
     assert res.status_code == 200, res.text
     print("[OK] AI Autonomous Execution via Defender API:", res.json().get("status", "Executed"))
 

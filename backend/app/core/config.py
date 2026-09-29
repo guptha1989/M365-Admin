@@ -28,8 +28,41 @@ class Settings(BaseSettings):
     ENTRA_CLIENT_ID: Optional[str] = Field(default=None, description="App Registration Client ID")
     ENTRA_CLIENT_SECRET: Optional[str] = Field(default=None, description="App Registration Client Secret")
     M365_DEFENDER_API_KEY: Optional[str] = Field(default=None, description="M365 Defender API Key")
+
+    # Specific Service API Credentials (Azure, Teams RW, Exchange RW)
+    AZURE_TENANT_ID: Optional[str] = Field(default=None, description="Azure Tenant ID")
+    AZURE_CLIENT_ID: Optional[str] = Field(default=None, description="Azure Client ID")
+    AZURE_CLIENT_SECRET: Optional[str] = Field(default=None, description="Azure Client Secret")
+    AZURE_API_KEY: Optional[str] = Field(default=None, description="Azure API Key")
+    AZURE_SUBSCRIPTION_ID: Optional[str] = Field(default=None, description="Azure Subscription ID")
+
+    TEAMS_CLIENT_ID: Optional[str] = Field(default=None, description="Teams Read/Write Client ID")
+    TEAMS_TENANT_ID: Optional[str] = Field(default=None, description="Teams Read/Write Tenant ID")
+    TEAMS_CLIENT_SECRET: Optional[str] = Field(default=None, description="Teams Read/Write Client Secret")
+    TEAMS_API_KEY: Optional[str] = Field(default=None, description="Teams Read/Write API Key")
+    TEAMS_CHANNEL_NAME: str = Field(default="General", description="Teams Channel Name for daily reports")
+
+    EXCHANGE_CLIENT_ID: Optional[str] = Field(default=None, description="Exchange Read/Write Client ID")
+    EXCHANGE_TENANT_ID: Optional[str] = Field(default=None, description="Exchange Read/Write Tenant ID")
+    EXCHANGE_CLIENT_SECRET: Optional[str] = Field(default=None, description="Exchange Read/Write Client Secret")
+    EXCHANGE_API_KEY: Optional[str] = Field(default=None, description="Exchange Read/Write API Key")
     
-    # AI & LLM Provider API Keys & Failover Priority
+    # Multi-LLM Provider API Keys & Auto-Switch Failover Priority
+    LLM1_NAME: Optional[str] = Field(default="OpenAI GPT-4o", description="LLM Provider 1 Name")
+    LLM1_MODEL: Optional[str] = Field(default="gpt-4o", description="LLM Provider 1 Model")
+    LLM1_API_KEY: Optional[str] = Field(default=None, description="LLM Provider 1 API Key")
+    LLM1_ENDPOINT: Optional[str] = Field(default=None, description="LLM Provider 1 Endpoint")
+
+    LLM2_NAME: Optional[str] = Field(default="Google Gemini", description="LLM Provider 2 Name")
+    LLM2_MODEL: Optional[str] = Field(default="gemini-1.5-flash", description="LLM Provider 2 Model")
+    LLM2_API_KEY: Optional[str] = Field(default=None, description="LLM Provider 2 API Key")
+    LLM2_ENDPOINT: Optional[str] = Field(default=None, description="LLM Provider 2 Endpoint")
+
+    LLM3_NAME: Optional[str] = Field(default="Anthropic Claude 3.5", description="LLM Provider 3 Name")
+    LLM3_MODEL: Optional[str] = Field(default="claude-3-5-sonnet", description="LLM Provider 3 Model")
+    LLM3_API_KEY: Optional[str] = Field(default=None, description="LLM Provider 3 API Key")
+    LLM3_ENDPOINT: Optional[str] = Field(default=None, description="LLM Provider 3 Endpoint")
+
     OPENAI_API_KEY: Optional[str] = Field(default=None, description="OpenAI API Key")
     GEMINI_API_KEY: Optional[str] = Field(default=None, description="Google Gemini API Key")
     CLAUDE_API_KEY: Optional[str] = Field(default=None, description="Anthropic Claude API Key")
@@ -41,7 +74,7 @@ class Settings(BaseSettings):
     MISTRAL_API_KEY: Optional[str] = Field(default=None, description="Mistral AI API Key")
     HUGGINGFACE_API_KEY: Optional[str] = Field(default=None, description="HuggingFace API Key / Token")
     LOCAL_LLM_URL: Optional[str] = Field(default="http://localhost:11434/v1", description="Local Ollama/LLM Endpoint")
-    LLM_FAILOVER_ORDER: str = Field(default="openai,gemini,claude,azure_openai,local,deepseek,groq,cohere,mistral,huggingface", description="Comma-separated LLM auto-switch failover priority order")
+    LLM_FAILOVER_ORDER: str = Field(default="llm1,llm2,llm3,openai,gemini,claude,azure_openai,local,deepseek,groq,cohere,mistral,huggingface", description="Comma-separated LLM auto-switch failover priority order")
     
     # 3rd Party Integrations & Maps APIs
     MAPS_API_KEY: Optional[str] = Field(default=None, description="Maps API Key (Google or Azure Maps)")
@@ -50,7 +83,13 @@ class Settings(BaseSettings):
     MAPBOX_ACCESS_TOKEN: Optional[str] = Field(default=None, description="Mapbox API Access Token")
     OSM_TILE_SERVER_URL: Optional[str] = Field(default=None, description="OpenStreetMap / Custom Tile Server URL")
     
-    # Custom Enterprise & Future Integrations
+    # SNOW (ServiceNow) ITSM Integration
+    SNOW_INSTANCE_URL: Optional[str] = Field(default=None, description="ServiceNow Instance URL")
+    SNOW_CLIENT_ID: Optional[str] = Field(default=None, description="ServiceNow Client ID")
+    SNOW_CLIENT_SECRET: Optional[str] = Field(default=None, description="ServiceNow Client Secret")
+    SNOW_API_KEY: Optional[str] = Field(default=None, description="ServiceNow API Key")
+    SNOW_USERNAME: Optional[str] = Field(default=None, description="ServiceNow Username")
+    SNOW_PASSWORD: Optional[str] = Field(default=None, description="ServiceNow Password")
     SERVICENOW_ENDPOINT: Optional[str] = Field(default=None, description="ServiceNow ITSM REST API Endpoint")
     SERVICENOW_API_KEY: Optional[str] = Field(default=None, description="ServiceNow Auth Token")
     SPLUNK_ENDPOINT: Optional[str] = Field(default=None, description="Splunk HEC API Endpoint")

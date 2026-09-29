@@ -196,7 +196,7 @@ def get_ai_recommendations(
 
 @router.post(
     "/execute-recommendation/{recommendation_id}",
-    summary="Execute Approved Recommendation via Python (Microsoft Graph REST API)"
+    summary="Recommendation Status Inquiry (Report & Recommendation Mode)"
 )
 def execute_recommendation(
     recommendation_id: int,
@@ -204,15 +204,21 @@ def execute_recommendation(
     user: dict = Depends(require_roles(["GlobalAdmin"]))
 ):
     """
-    Executes an approved AI recommendation action.
-
-    EXECUTION LAYER: Python only (action_engine → api_execution_service → Microsoft Graph REST API).
-    The LLM is NOT involved in execution — it only generated the recommendation text.
+    Report & Recommendation Mode:
+    Direct action execution is deferred. This endpoint returns the recommendation audit report.
+    Automated agent execution logic will be enabled in a future release.
     """
-    from app.services.action_engine import action_engine
-    user_upn = user.get("preferred_username", "admin@contoso.com")
+    rec = db.query(AIRecommendation).filter(AIRecommendation.id == recommendation_id).first()
+    if not rec:
+        raise HTTPException(status_code=404, detail="Recommendation not found")
 
-    result = action_engine.approve_action(db, recommendation_id, user_upn=user_upn)
-    result["execution_layer"] = "Python:ActionEngine → MicrosoftGraphRESTAPI"
-    result["llm_involvement"] = "None — LLM was used only for recommendation text generation"
-    return result
+    return {
+        "status": "REPORT_AND_RECOMMENDATION_ONLY",
+        "message": "Application is operating in Report & Recommendation First mode. Automated agent execution is deferred for future releases.",
+        "recommendation_id": rec.id,
+        "title": rec.title,
+        "category": rec.category,
+        "potential_savings_usd": rec.potential_savings_usd,
+        "security_benefit": rec.security_benefit,
+        "automation_agent_status": "DEFERRED"
+    }

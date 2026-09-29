@@ -53,11 +53,16 @@ def get_mailbox_reports_endpoint(user: dict = Depends(get_current_user)):
 
 @router.get("/azure-ad/inactive", summary="Azure AD Inactive & Disabled Accounts Report")
 def get_azure_ad_inactive_endpoint(
-    days: int = Query(90, description="Inactivity threshold days (60, 90, 120)"),
+    days: int = Query(90, description="Inactivity threshold days (30, 60, 90, 180, 240)"),
     category: str = Query("both", description="Category filter: 'inactive', 'disabled', or 'both'"),
     user: dict = Depends(get_current_user)
 ):
     return graph_client.get_azure_ad_inactive_users(inactivity_days=days, user_category=category)
+
+@router.get("/domain-security", summary="Exchange Domain Security & Authentication Audit (DKIM / DMARC / SPF / MX)")
+def get_domain_security_endpoint(user: dict = Depends(get_current_user)):
+    """Audits DKIM key status, DMARC policy enforcement, SPF records, and MX host health per tenant and domain."""
+    return graph_client.get_domain_security_report()
 
 @router.get("/azure-ad/licenses-summary", summary="Azure AD Licenses Breakdown (Trial vs Paid, Used vs Available)")
 def get_azure_ad_licenses_endpoint(user: dict = Depends(get_current_user)):
