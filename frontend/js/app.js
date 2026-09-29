@@ -706,6 +706,11 @@ function renderInteractiveTable(container, options) {
     const targetEl = typeof container === 'string' ? document.getElementById(container) : container;
     if (!targetEl) return;
 
+    // Normalize column labels and formatters
+    columns.forEach(c => {
+        if (!c.label) c.label = c.title || cleanKeyLabel(c.key);
+    });
+
     // Dynamic Column Registration: Automatically extract all keys present in dataset
     if (data && data.length > 0) {
         const existingKeys = new Set(columns.map(c => c.key));
@@ -771,29 +776,36 @@ function renderInteractiveTable(container, options) {
         const filtered = getFilteredData();
         const activeCols = columns.filter(c => visibleCols.includes(c.key));
 
-        const headerHtml = activeCols.map(c => `
-            <th style="cursor: pointer; user-select: none; padding: 8px;" data-sort="${c.key}">
-                <div style="display: flex; align-items: center; justify-content: space-between; gap: 4px;">
-                    <span>${c.label}</span>
-                    <span style="font-size: 0.7rem; opacity: 0.7;">${sortKey === c.key ? (sortAsc ? '▲' : '▼') : '↕'}</span>
-                </div>
-            </th>
-        `).join('');
+        const headerHtml = activeCols.map(c => {
+            const labelStr = c.label || c.title || cleanKeyLabel(c.key);
+            return `
+                <th style="cursor: pointer; user-select: none; padding: 8px;" data-sort="${c.key}">
+                    <div style="display: flex; align-items: center; justify-content: space-between; gap: 4px;">
+                        <span>${labelStr}</span>
+                        <span style="font-size: 0.7rem; opacity: 0.7;">${sortKey === c.key ? (sortAsc ? '▲' : '▼') : '↕'}</span>
+                    </div>
+                </th>
+            `;
+        }).join('');
 
-        const colFiltersRowHtml = activeCols.map(c => `
-            <th style="padding: 4px; background: rgba(0,0,0,0.03); font-weight: normal;">
-                <input type="text" class="table-col-filter-input" data-col="${c.key}" 
-                       placeholder="Filter ${c.label}..." 
-                       value="${currentFilters[c.key] || ''}"
-                       style="width: 100%; padding: 3px 6px; font-size: 0.78rem; border: 1px solid var(--border-color, #ccc); border-radius: 4px; height: 26px; font-weight: normal;" />
-            </th>
-        `).join('');
+        const colFiltersRowHtml = activeCols.map(c => {
+            const labelStr = c.label || c.title || cleanKeyLabel(c.key);
+            return `
+                <th style="padding: 4px; background: rgba(0,0,0,0.03); font-weight: normal;">
+                    <input type="text" class="table-col-filter-input" data-col="${c.key}" 
+                           placeholder="Filter ${labelStr}..." 
+                           value="${currentFilters[c.key] || ''}"
+                           style="width: 100%; padding: 3px 6px; font-size: 0.78rem; border: 1px solid var(--border-color, #ccc); border-radius: 4px; height: 26px; font-weight: normal;" />
+                </th>
+            `;
+        }).join('');
 
         const rowsHtml = filtered.length > 0 ? filtered.map((item, idx) => `
             <tr class="interactive-row" data-idx="${idx}" style="cursor: pointer;">
                 ${activeCols.map(c => {
                     let cellVal = item[c.key];
-                    let formatted = c.format ? c.format(cellVal, item) : (cellVal !== undefined && cellVal !== null ? String(cellVal) : '');
+                    let cellFormatter = c.render || c.format;
+                    let formatted = cellFormatter ? cellFormatter(cellVal, item) : (cellVal !== undefined && cellVal !== null ? (typeof cellVal === 'object' ? JSON.stringify(cellVal) : String(cellVal)) : '');
                     return `<td>${formatted}</td>`;
                 }).join('')}
             </tr>
@@ -849,26 +861,30 @@ function renderInteractiveTable(container, options) {
     }
 
     let filterDropdownsHtml = filterFields.map(fKey => {
-        const colDef = columns.find(c => c.key === fKey) || { label: cleanKeyLabel(fKey) };
-        const uniqueVals = Array.from(new Set(data.map(i => i[fKey]).filter(v => v !== undefined && v !== null))).sort();
+        const colDef = columns.find(c => c.key === fKey) || {};
+        const labelStr = colDef.label || colDef.title || cleanKeyLabel(fKey);
+        const uniqueVals = Array.from(new Set(data.map(i => i[fKey]).filter(v => v !== undefined && v !== null && typeof v !== 'object'))).sort();
         if (!uniqueVals.length) return '';
         return `
             <div style="display: flex; flex-direction: column; gap: 2px;">
-                <label style="font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase;">Filter ${colDef.label}:</label>
+                <label style="font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase;">Filter ${labelStr}:</label>
                 <select class="form-control field-filter-select" data-field="${fKey}" style="padding: 4px 8px; font-size: 0.85rem; height: 32px;">
-                    <option value="">All ${colDef.label}s</option>
+                    <option value="">All ${labelStr}s</option>
                     ${uniqueVals.map(v => `<option value="${v}">${v}</option>`).join('')}
                 </select>
             </div>
         `;
     }).join('');
 
-    const colCheckboxesHtml = columns.map(c => `
-        <label style="display: flex; align-items: center; gap: 8px; padding: 6px 10px; cursor: pointer; font-size: 0.85rem; color: #201F1E; border-bottom: 1px solid #F3F2F1;">
-            <input type="checkbox" class="col-toggle-cb" data-key="${c.key}" ${visibleCols.includes(c.key) ? 'checked' : ''} style="width: auto;" />
-            <span>${c.label}</span>
-        </label>
-    `).join('');
+    const colCheckboxesHtml = columns.map(c => {
+        const labelStr = c.label || c.title || cleanKeyLabel(c.key);
+        return `
+            <label style="display: flex; align-items: center; gap: 8px; padding: 6px 10px; cursor: pointer; font-size: 0.85rem; color: #201F1E; border-bottom: 1px solid #F3F2F1;">
+                <input type="checkbox" class="col-toggle-cb" data-key="${c.key}" ${visibleCols.includes(c.key) ? 'checked' : ''} style="width: auto;" />
+                <span>${labelStr}</span>
+            </label>
+        `;
+    }).join('');
 
     targetEl.innerHTML = `
         <div class="card" style="padding: 0; overflow: hidden; margin-top: 1rem; border: 1px solid var(--border-color);">
@@ -1793,7 +1809,7 @@ async function renderLicenseUserRecommendationsView(containerEl, currentPhase, l
                 columns: [
                     {
                         key: 'user_principal_name',
-                        title: 'User Principal Name / Name',
+                        label: 'User Principal Name / Name',
                         render: (val, row) => `
                             <div>
                                 <strong>${row.display_name}</strong><br>
@@ -1804,7 +1820,7 @@ async function renderLicenseUserRecommendationsView(containerEl, currentPhase, l
                     },
                     {
                         key: 'inactive_days',
-                        title: 'Inactive Days',
+                        label: 'Inactive Days',
                         render: (val, row) => {
                             const color = !row.account_enabled ? '#ef4444' : (val > 90 ? '#f59e0b' : (val > 60 ? '#3b82f6' : '#10b981'));
                             return `<span class="badge" style="background: ${color}20; color: ${color}; font-weight: bold; padding: 4px 8px;">${!row.account_enabled ? 'DEPROVISIONED' : `${val} Days Inactive`}</span>`;
@@ -1812,12 +1828,12 @@ async function renderLicenseUserRecommendationsView(containerEl, currentPhase, l
                     },
                     {
                         key: 'assigned_license',
-                        title: 'Assigned License',
+                        label: 'Assigned License',
                         render: (val) => `<span class="badge" style="background: rgba(0, 120, 212, 0.15); color: #38bdf8; font-weight: 600;">${val}</span>`
                     },
                     {
                         key: 'recommendation',
-                        title: 'AI Action Recommendation',
+                        label: 'AI Action Recommendation',
                         render: (val, row) => {
                             const isReclaim = val.includes('RECLAIM');
                             const isDowngrade = val.includes('DOWNGRADE');
@@ -1832,18 +1848,32 @@ async function renderLicenseUserRecommendationsView(containerEl, currentPhase, l
                     },
                     {
                         key: 'mailbox_permissions',
-                        title: 'Mailbox Permission Details',
+                        label: 'Mailbox Permission Details',
                         render: (val) => `<span style="font-size: 0.78rem; color: var(--text-secondary); line-height: 1.3; display: block; max-width: 220px;">📧 ${val}</span>`
                     },
                     {
                         key: 'onedrive_permissions',
-                        title: 'OneDrive Permission Details',
+                        label: 'OneDrive Permission Details',
                         render: (val) => `<span style="font-size: 0.78rem; color: var(--text-secondary); line-height: 1.3; display: block; max-width: 220px;">📁 ${val}</span>`
                     },
                     {
                         key: 'sharepoint_permissions',
-                        title: 'SharePoint Permission Details',
+                        label: 'SharePoint Permission Details',
                         render: (val) => `<span style="font-size: 0.78rem; color: var(--text-secondary); line-height: 1.3; display: block; max-width: 220px;">📊 ${val}</span>`
+                    },
+                    {
+                        key: 'action',
+                        label: 'Action',
+                        render: (val, row) => `
+                            <div style="display: flex; flex-direction: column; gap: 4px;">
+                                <button class="btn btn-primary btn-sm" style="font-size: 0.75rem; padding: 3px 8px; white-space: nowrap;" onclick="triggerLicenseUpgrade('${row.user_principal_name}')">
+                                    🚀 Reclaim / Downgrade
+                                </button>
+                                <button class="btn btn-secondary btn-sm" style="font-size: 0.72rem; padding: 2px 6px;" onclick="showItemDetailModal('👤 ${row.display_name} Details', ${JSON.stringify(row).replace(/"/g, '&quot;')})">
+                                    🔍 Inspect
+                                </button>
+                            </div>
+                        `
                     }
                 ],
                 searchableKeys: ['user_principal_name', 'display_name', 'department', 'assigned_license', 'recommendation', 'mailbox_permissions'],
@@ -1951,7 +1981,7 @@ async function renderSharePointOneDriveRecommendationsView(containerEl, currentP
                 columns: [
                     {
                         key: 'siteName',
-                        title: 'Site & Library Name',
+                        label: 'Site & Library Name',
                         render: (val, row) => `
                             <div>
                                 <strong>📊 ${val}</strong><br>
@@ -1962,7 +1992,7 @@ async function renderSharePointOneDriveRecommendationsView(containerEl, currentP
                     },
                     {
                         key: 'primaryOwner',
-                        title: 'Primary Owner & Members',
+                        label: 'Primary Owner & Members',
                         render: (val, row) => `
                             <div style="font-size: 0.8rem;">
                                 <strong>👤 Owner:</strong> ${val}<br>
@@ -1972,12 +2002,12 @@ async function renderSharePointOneDriveRecommendationsView(containerEl, currentP
                     },
                     {
                         key: 'lastAccessedDaysAgo',
-                        title: 'Inactive Days',
+                        label: 'Inactive Days',
                         render: (val) => `<span class="badge" style="background: rgba(245, 158, 11, 0.2); color: #fbbf24; font-weight: bold;">⚠️ ${val} Days Unaccessed</span>`
                     },
                     {
                         key: 'storageReclaimPotentialGB',
-                        title: 'Reclaim Potential & Savings',
+                        label: 'Reclaim Potential & Savings',
                         render: (val, row) => `
                             <div>
                                 <span style="font-weight: bold; color: #34d399;">📦 ${val} GB</span><br>
@@ -1987,7 +2017,7 @@ async function renderSharePointOneDriveRecommendationsView(containerEl, currentP
                     },
                     {
                         key: 'inactiveFiles',
-                        title: 'Inactive Files List & Download Action',
+                        label: 'Inactive Files List',
                         render: (val, row) => {
                             const filesCount = (val || []).length;
                             return `
@@ -1999,6 +2029,20 @@ async function renderSharePointOneDriveRecommendationsView(containerEl, currentP
                                 </div>
                             `;
                         }
+                    },
+                    {
+                        key: 'action',
+                        label: 'Action',
+                        render: (val, row) => `
+                            <div style="display: flex; flex-direction: column; gap: 4px;">
+                                <button class="btn btn-primary btn-sm" style="font-size: 0.75rem; padding: 3px 8px; white-space: nowrap;" onclick="alert('🚀 Cold storage archival triggered for ${row.siteName}! Storage reclaim request logged.')">
+                                    🚀 Tier Cold Storage
+                                </button>
+                                <button class="btn btn-secondary btn-sm" style="font-size: 0.72rem; padding: 2px 6px;" onclick="showItemDetailModal('📊 ${row.siteName} Site Details', ${JSON.stringify(row).replace(/"/g, '&quot;')})">
+                                    🔍 Inspect Site
+                                </button>
+                            </div>
+                        `
                     }
                 ],
                 searchableKeys: ['siteName', 'libraryName', 'primaryOwner', 'siteMembersSummary'],
